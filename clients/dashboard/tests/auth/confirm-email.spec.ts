@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { mockJsonResponse, mockProblemDetails } from "../helpers/api-mocks";
+import { ENGLISH_UI } from "../helpers/language";
+
+test.use({ storageState: ENGLISH_UI });
 
 const VALID_LINK =
   "/confirm-email?userId=u-1&code=verify-code&tenant=acme";

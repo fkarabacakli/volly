@@ -2,6 +2,9 @@ import { expect, test } from "@playwright/test";
 import { mockJsonResponse } from "../helpers/api-mocks";
 import { seedAuthedSession, TEST_USER } from "../helpers/auth-seed";
 import { installShellMocks } from "../helpers/shell-mocks";
+import { ENGLISH_UI } from "../helpers/language";
+
+test.use({ storageState: ENGLISH_UI });
 
 // The readiness probe lives at the ORIGIN (no /api/v1 prefix) and is
 // fetched anonymously by src/api/health.ts → `${env.apiBase}/health/ready`.

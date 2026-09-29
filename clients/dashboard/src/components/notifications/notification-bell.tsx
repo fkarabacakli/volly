@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Check, MessageCircle } from "lucide-react";
@@ -17,6 +18,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RealtimeStatusPill } from "@/components/realtime/realtime-status-pill";
+import type { TFunction } from "i18next";
+import { currentLocale } from "@/i18n";
 import { cn } from "@/lib/cn";
 
 /**
@@ -26,6 +29,7 @@ import { cn } from "@/lib/cn";
  * without a refetch.
  */
 export function NotificationBell() {
+  const { t } = useTranslation("misc");
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -90,8 +94,8 @@ export function NotificationBell() {
         <button
           type="button"
           data-notification-bell
-          aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ""}`}
-          title="Notifications"
+          aria-label={unread > 0 ? t("notifications.bellLabelUnread", { count: unread }) : t("notifications.bellLabel")}
+          title={t("notifications.title")}
           className={cn(
             "relative grid h-9 w-9 cursor-pointer place-items-center rounded-md",
             "text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)] hover:text-[var(--color-foreground)]",
@@ -121,12 +125,12 @@ export function NotificationBell() {
         <div className="flex items-start justify-between gap-3 border-b border-border bg-card px-4 pb-3 pt-4">
           <div className="min-w-0">
             <div className="font-display text-sm font-semibold tracking-tight">
-              Notifications
+              {t("notifications.title")}
             </div>
             <div className="text-[12px] text-[var(--color-muted-foreground)]">
               {unread === 0
-                ? "All caught up"
-                : `${unread} unread · ${inbox.length} loaded`}
+                ? t("notifications.allCaughtUp")
+                : t("notifications.summary", { unread, loaded: inbox.length })}
             </div>
           </div>
           {unread > 0 && (
@@ -144,21 +148,21 @@ export function NotificationBell() {
               )}
             >
               <Check className="h-3 w-3" aria-hidden />
-              Mark all read
+              {t("notifications.markAll")}
             </button>
           )}
         </div>
 
-        <DropdownMenuLabel className="!my-0">Recent</DropdownMenuLabel>
+        <DropdownMenuLabel className="!my-0">{t("notifications.recent")}</DropdownMenuLabel>
 
         <div className="max-h-[400px] overflow-y-auto">
           {inboxQuery.isLoading ? (
             <p className="px-4 py-6 text-center text-[12px] text-[var(--color-muted-foreground)]">
-              Loading…
+              {t("notifications.loading")}
             </p>
           ) : inbox.length === 0 ? (
             <p className="px-4 py-6 text-center text-sm text-[var(--color-muted-foreground)]">
-              Nothing yet. Mentions and channel updates will appear here.
+              {t("notifications.empty")}
             </p>
           ) : (
             <ul className="px-1.5 pb-2">
@@ -181,7 +185,7 @@ export function NotificationBell() {
             }}
             className="text-[11px] text-[var(--color-muted-foreground)] transition-colors hover:text-[var(--color-foreground)]"
           >
-            Settings ↗
+            {t("notifications.settings")}
           </button>
         </div>
       </DropdownMenuContent>
@@ -197,7 +201,8 @@ function NotificationRow({
   onSelect: () => void;
 }) {
   const isUnread = notification.readAtUtc === null || notification.readAtUtc === undefined;
-  const time = useMemo(() => relativeTime(notification.createdAtUtc), [notification.createdAtUtc]);
+  const { t } = useTranslation("misc");
+  const time = useMemo(() => relativeTime(notification.createdAtUtc, t), [notification.createdAtUtc, t]);
   return (
     <button
       type="button"
@@ -255,17 +260,17 @@ function NotificationRow({
   );
 }
 
-function relativeTime(iso: string): string {
+function relativeTime(iso: string, t: TFunction<"misc">): string {
   const diffMs = Date.now() - new Date(iso).getTime();
   const seconds = Math.max(0, Math.round(diffMs / 1000));
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return t("notifications.justNow");
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 60) return t("notifications.minutes", { n: minutes });
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h`;
+  if (hours < 24) return t("notifications.hours", { n: hours });
   const days = Math.round(hours / 24);
-  if (days < 7) return `${days}d`;
+  if (days < 7) return t("notifications.days", { n: days });
   const weeks = Math.round(days / 7);
-  if (weeks < 5) return `${weeks}w`;
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (weeks < 5) return t("notifications.weeks", { n: weeks });
+  return new Date(iso).toLocaleDateString(currentLocale(), { month: "short", day: "numeric" });
 }

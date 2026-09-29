@@ -1,7 +1,9 @@
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AlertCircle, CheckCircle2, CloudUpload, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { i18n } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { useFileUpload, formatBytes, type UploadOptions } from "@/hooks/use-file-upload";
 import type { FileAssetDto } from "@/api/files";
@@ -25,6 +27,7 @@ type Props = {
  * the user can keep dropping files without leaving the surface.
  */
 export function FileDropzone({ options, onUploaded, disabled, accept, className }: Props) {
+  const { t } = useTranslation("ui");
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const { upload, progress, isUploading, reset, cancel } = useFileUpload(options);
@@ -46,7 +49,7 @@ export function FileDropzone({ options, onUploaded, disabled, accept, className 
         // then reset so the surface is immediately ready for the next file.
         // The user explicitly chose this continuous-flow over the "Upload
         // another" success card — they were finding the extra click friction.
-        toast.success("File uploaded", {
+        toast.success(t("dropzone.uploaded"), {
           description: `${asset.originalFileName} · ${formatBytes(asset.sizeBytes)}`,
         });
         reset();
@@ -159,7 +162,7 @@ export function FileDropzone({ options, onUploaded, disabled, accept, className 
               reset();
             }}
           >
-            Cancel
+            {t("dropzone.cancel")}
           </Button>
         )}
       </div>
@@ -199,17 +202,17 @@ function DropzoneIcon({ status }: { status: string | undefined }) {
 function captionFor(status: string | undefined, fileName?: string): string {
   switch (status) {
     case "preparing":
-      return "Preparing upload…";
+      return i18n.t("ui:dropzone.preparing");
     case "uploading":
-      return `Uploading ${fileName ?? "…"}`;
+      return i18n.t("ui:dropzone.uploading", { name: fileName ?? "…" });
     case "finalizing":
-      return "Finalizing…";
+      return i18n.t("ui:dropzone.finalizing");
     case "done":
-      return `Uploaded ${fileName ?? "file"}`;
+      return i18n.t("ui:dropzone.done", { name: fileName ?? i18n.t("ui:dropzone.file") });
     case "error":
-      return "Upload failed";
+      return i18n.t("ui:dropzone.failed");
     default:
-      return "Drop a file or click to browse";
+      return i18n.t("ui:dropzone.idle");
   }
 }
 
@@ -223,14 +226,14 @@ function detailFor(
     return `${progress.fileAsset.contentType} · ${formatBytes(progress.fileAsset.sizeBytes)}`;
   }
   if (status === "uploading" && progress) {
-    return `${formatBytes(progress.loaded)} of ${formatBytes(progress.totalBytes)}`;
+    return i18n.t("ui:dropzone.progressOf", { loaded: formatBytes(progress.loaded), total: formatBytes(progress.totalBytes) });
   }
   if (options.allowedExtensions && options.allowedExtensions.length > 0) {
     const ext = options.allowedExtensions.join(", ");
-    const cap = options.maxBytes ? ` · up to ${formatBytes(options.maxBytes)}` : "";
-    return `Allowed: ${ext}${cap}`;
+    const cap = options.maxBytes ? i18n.t("ui:dropzone.upTo", { size: formatBytes(options.maxBytes) }) : "";
+    return i18n.t("ui:dropzone.allowed", { ext, cap });
   }
-  return typeof options.category === "string" ? options.category : "Drop a file";
+  return typeof options.category === "string" ? options.category : i18n.t("ui:dropzone.dropFile");
 }
 
 function ProgressBar({ percent, loaded, total }: { percent: number; loaded: number; total: number }) {
@@ -238,7 +241,7 @@ function ProgressBar({ percent, loaded, total }: { percent: number; loaded: numb
     <div className="w-full max-w-sm space-y-1.5">
       <div
         role="progressbar"
-        aria-label="Upload progress"
+        aria-label={i18n.t("ui:dropzone.progress")}
         aria-valuenow={percent}
         aria-valuemin={0}
         aria-valuemax={100}

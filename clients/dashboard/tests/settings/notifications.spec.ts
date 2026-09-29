@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { installShellMocks } from "../helpers/shell-mocks";
 import { seedAuthedSession, TEST_USER } from "../helpers/auth-seed";
+import { ENGLISH_UI } from "../helpers/language";
+
+test.use({ storageState: ENGLISH_UI });
 
 // Per-user notification preference persistence isn't built yet — the page
 // is an honest placeholder that points users at the in-app bell. There's

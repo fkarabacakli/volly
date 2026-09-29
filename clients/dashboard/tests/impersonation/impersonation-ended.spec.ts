@@ -13,6 +13,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { mockProblemDetails } from "../helpers/api-mocks";
 import { installShellMocks } from "../helpers/shell-mocks";
+import { ENGLISH_UI } from "../helpers/language";
+
+test.use({ storageState: ENGLISH_UI });
 
 const ACCESS_KEY = "fsh.dashboard.accessToken";
 const REFRESH_KEY = "fsh.dashboard.refreshToken";

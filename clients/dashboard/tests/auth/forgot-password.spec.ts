@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { captureRequest, mockJsonResponse, mockProblemDetails } from "../helpers/api-mocks";
+import { ENGLISH_UI } from "../helpers/language";
+
+test.use({ storageState: ENGLISH_UI });
 
 test.describe("forgot-password page", () => {
   test("renders the form with the headline + field labels", async ({ page }) => {

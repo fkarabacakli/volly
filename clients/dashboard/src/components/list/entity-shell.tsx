@@ -1,6 +1,8 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { i18n } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { ToneIconTile, type ToneIconTileTone } from "./tone-icon-tile";
 
@@ -9,6 +11,16 @@ import { ToneIconTile, type ToneIconTileTone } from "./tone-icon-tile";
 //  + description on the left, action buttons on the right.
 //  Matches the dentalOS patient-page header rhythm.
 // ───────────────────────────────────────────────────────────────────────
+
+const KNOWN_UNITS = ["item", "user", "role", "group", "session", "event", "invoice", "ticket", "brand"] as const;
+type KnownUnit = (typeof KNOWN_UNITS)[number];
+const isKnownUnit = (u: string): u is KnownUnit => (KNOWN_UNITS as readonly string[]).includes(u);
+
+/** "5 users" / "5 kullanıcı" — known units are translated, anything else keeps the English plural. */
+function unitLabel(unit: string, total: number): string {
+  if (isKnownUnit(unit)) return i18n.t(`ui:units.${unit}`, { count: total });
+  return `${total} ${total === 1 ? unit : `${unit}s`}`;
+}
 
 export function EntityPageHeader({
   icon,
@@ -41,7 +53,7 @@ export function EntityPageHeader({
             </h1>
             {total !== undefined && total !== null && (
               <span className="font-mono text-[11px] text-[var(--color-muted-foreground)]">
-                {total} {total === 1 ? unit : `${unit}s`}
+                {unitLabel(unit, total)}
               </span>
             )}
           </div>
@@ -75,13 +87,14 @@ export function EntitySearch({
   placeholder?: string;
   autoFocus?: boolean;
 }) {
+  const { t } = useTranslation("ui");
   return (
     <div className="relative">
       <Search className="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-[oklch(from_var(--color-muted-foreground)_l_c_h_/_0.5)]" />
       <input
         type="text"
         placeholder={placeholder}
-        aria-label={placeholder ?? "Search"}
+        aria-label={placeholder ?? t("list.search")}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         autoFocus={autoFocus}
@@ -97,7 +110,7 @@ export function EntitySearch({
       {value && (
         <button
           onClick={() => onChange("")}
-          aria-label="Clear search"
+          aria-label={t("list.clearSearch")}
           className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-[11px] font-medium text-[var(--color-muted-foreground)] transition-colors hover:text-[var(--color-foreground)]"
           type="button"
         >
@@ -172,18 +185,19 @@ export function EntityPager({
   onPrev: () => void;
   onNext: () => void;
 }) {
+  const { t } = useTranslation("ui");
   if (totalPages <= 1) return null;
   return (
     <div className="mt-3 flex items-center justify-between">
       <p className="text-[11px] text-[var(--color-muted-foreground)]">
-        Page {page} of {totalPages}
+        {t("list.pageOf", { page, total: totalPages })}
       </p>
       <div className="flex items-center gap-1">
         <button
           type="button"
           disabled={!hasPrev}
           onClick={onPrev}
-          aria-label="Previous page"
+          aria-label={t("list.previous")}
           className="grid size-8 cursor-pointer place-items-center rounded-lg text-[var(--color-muted-foreground)] transition-colors hover:bg-[oklch(from_var(--color-muted)_l_c_h_/_0.5)] hover:text-[var(--color-foreground)] disabled:cursor-not-allowed disabled:opacity-30"
         >
           <ChevronLeft className="size-4" />
@@ -192,7 +206,7 @@ export function EntityPager({
           type="button"
           disabled={!hasNext}
           onClick={onNext}
-          aria-label="Next page"
+          aria-label={t("list.next")}
           className="grid size-8 cursor-pointer place-items-center rounded-lg text-[var(--color-muted-foreground)] transition-colors hover:bg-[oklch(from_var(--color-muted)_l_c_h_/_0.5)] hover:text-[var(--color-foreground)] disabled:cursor-not-allowed disabled:opacity-30"
         >
           <ChevronRight className="size-4" />
@@ -478,9 +492,10 @@ export function EntityListLoading({
   desktopColumns: string;
   mobile?: boolean;
 }) {
+  const { t } = useTranslation("ui");
   return (
     <div role="status" aria-busy="true">
-      <span className="sr-only">Loading…</span>
+      <span className="sr-only">{t("list.loading")}</span>
       {mobile && (
         <div className="space-y-2 md:hidden">
           {Array.from({ length: rows }).map((_, i) => (

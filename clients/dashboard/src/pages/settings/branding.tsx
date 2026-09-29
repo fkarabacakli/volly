@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2, Palette, RotateCcw, Save } from "lucide-react";
@@ -18,6 +19,7 @@ import {
   type TenantThemeDto,
 } from "@/api/tenants";
 import { ApiRequestError } from "@/lib/api-client";
+import { i18n } from "@/i18n";
 import { cn } from "@/lib/cn";
 
 /**
@@ -37,6 +39,7 @@ import { cn } from "@/lib/cn";
 const THEME_QUERY_KEY = ["tenant", "theme"] as const;
 
 export function BrandingSettings() {
+  const { t } = useTranslation("branding");
   const queryClient = useQueryClient();
 
   const themeQuery = useQuery({
@@ -64,27 +67,27 @@ export function BrandingSettings() {
   const saveMutation = useMutation({
     mutationFn: (theme: TenantThemeDto) => updateTenantTheme(theme),
     onSuccess: () => {
-      toast.success("Branding saved");
+      toast.success(t("saved"));
       void queryClient.invalidateQueries({ queryKey: THEME_QUERY_KEY });
     },
-    onError: (err) => toast.error("Save failed", { description: apiErr(err) }),
+    onError: (err) => toast.error(t("saveFailed"), { description: apiErr(err) }),
   });
 
   const resetMutation = useMutation({
     mutationFn: resetTenantTheme,
     onSuccess: () => {
-      toast.success("Branding reset to defaults");
+      toast.success(t("resetDone"));
       void queryClient.invalidateQueries({ queryKey: THEME_QUERY_KEY });
     },
-    onError: (err) => toast.error("Reset failed", { description: apiErr(err) }),
+    onError: (err) => toast.error(t("resetFailed"), { description: apiErr(err) }),
   });
 
   if (themeQuery.isLoading) {
     return (
-      <SettingsSection title="Branding" icon={Palette} description="Loading branding…">
+      <SettingsSection title={t("title")} icon={Palette} description={t("loading")}>
         <div className="flex items-center gap-2 text-[13px] text-[var(--color-muted-foreground)]">
           <Loader2 className="size-4 animate-spin" aria-hidden />
-          <span>Loading branding</span>
+          <span>{t("loadingShort")}</span>
         </div>
       </SettingsSection>
     );
@@ -92,7 +95,7 @@ export function BrandingSettings() {
 
   if (themeQuery.isError) {
     return (
-      <SettingsSection title="Branding" icon={Palette}>
+      <SettingsSection title={t("title")} icon={Palette}>
         <ErrorBand message={apiErr(themeQuery.error)} />
       </SettingsSection>
     );
@@ -130,10 +133,10 @@ export function BrandingSettings() {
           variant="ghost"
           onClick={() => resetMutation.mutate()}
           disabled={resetMutation.isPending || saveMutation.isPending}
-          aria-label="Reset branding to defaults"
+          aria-label={t("resetAria")}
         >
           <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-          {resetMutation.isPending ? "Resetting…" : "Reset to defaults"}
+          {resetMutation.isPending ? t("resetting") : t("reset")}
         </Button>
         <Button
           type="button"
@@ -145,7 +148,7 @@ export function BrandingSettings() {
           ) : (
             <Save className="mr-1.5 h-3.5 w-3.5" />
           )}
-          {saveMutation.isPending ? "Saving…" : "Save branding"}
+          {saveMutation.isPending ? t("saving") : t("save")}
         </Button>
       </div>
     </div>
@@ -153,23 +156,23 @@ export function BrandingSettings() {
 
   return (
     <SettingsSection
-      title="Branding"
+      title={t("title")}
       icon={Palette}
-      description="Theme tokens consumed by your tenant's apps on sign-in. Live preview reflects the primary action with the chosen palette."
+      description={t("description")}
       footer={footer}
     >
       <div className="space-y-6">
-        <ThemePreview palette={draft.lightPalette} label="Light preview" />
+        <ThemePreview palette={draft.lightPalette} label={t("lightPreview")} />
 
         <div className="grid gap-5 lg:grid-cols-2">
           <PaletteEditor
-            title="Light palette"
+            title={t("lightPalette")}
             palette={draft.lightPalette}
             onChange={onLight}
             defaults={DEFAULT_LIGHT_PALETTE}
           />
           <PaletteEditor
-            title="Dark palette"
+            title={t("darkPalette")}
             palette={draft.darkPalette}
             onChange={onDark}
             defaults={DEFAULT_DARK_PALETTE}
@@ -186,16 +189,16 @@ export function BrandingSettings() {
 // Palette editor — color swatches paired with hex inputs
 // ─────────────────────────────────────────────────────────────────────────
 
-const PALETTE_FIELDS: ReadonlyArray<{ key: keyof PaletteDto; label: string }> = [
-  { key: "primary", label: "Primary" },
-  { key: "secondary", label: "Secondary" },
-  { key: "tertiary", label: "Tertiary" },
-  { key: "background", label: "Background" },
-  { key: "surface", label: "Surface" },
-  { key: "error", label: "Error" },
-  { key: "warning", label: "Warning" },
-  { key: "success", label: "Success" },
-  { key: "info", label: "Info" },
+const PALETTE_FIELDS: ReadonlyArray<keyof PaletteDto> = [
+  "primary",
+  "secondary",
+  "tertiary",
+  "background",
+  "surface",
+  "error",
+  "warning",
+  "success",
+  "info",
 ];
 
 function PaletteEditor({
@@ -209,6 +212,7 @@ function PaletteEditor({
   onChange: (next: Partial<PaletteDto>) => void;
   defaults: PaletteDto;
 }) {
+  const { t } = useTranslation("branding");
   return (
     <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]">
       <div className="flex items-center justify-between border-b border-[oklch(from_var(--color-border)_l_c_h_/_0.5)] px-4 py-2.5">
@@ -221,14 +225,14 @@ function PaletteEditor({
           onClick={() => onChange(defaults)}
         >
           <RotateCcw className="h-2.5 w-2.5" aria-hidden />
-          Reset palette
+          {t("resetPalette")}
         </button>
       </div>
       <div className="grid gap-2 p-4 sm:grid-cols-2">
-        {PALETTE_FIELDS.map(({ key, label }) => (
+        {PALETTE_FIELDS.map((key) => (
           <ColorRow
             key={key}
-            label={label}
+            label={t(`palette.${key}`)}
             value={palette[key]}
             onChange={(v) => onChange({ [key]: v } as Partial<PaletteDto>)}
           />
@@ -247,6 +251,7 @@ function ColorRow({
   value: string;
   onChange: (next: string) => void;
 }) {
+  const { t } = useTranslation("branding");
   const valid = /^#[0-9a-f]{6}$/i.test(value);
   return (
     <div className="flex items-center gap-2.5">
@@ -254,14 +259,14 @@ function ColorRow({
       <label
         className="relative grid h-8 w-8 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-lg shadow-sm ring-1 ring-inset ring-[var(--color-border)]"
         style={{ backgroundColor: valid ? value : undefined }}
-        title={`Pick ${label} color`}
+        title={t("pickColor", { label })}
       >
         <input
           type="color"
           value={valid ? value : "#000000"}
           onChange={(e) => onChange(e.target.value.toUpperCase())}
           className="sr-only"
-          aria-label={`${label} color`}
+          aria-label={t("colorAria", { label })}
         />
       </label>
       <div className="min-w-0 flex-1">
@@ -297,21 +302,21 @@ function BrandAssetsEditor({
   assets: BrandAssetsDto;
   onChange: (next: Partial<BrandAssetsDto>) => void;
 }) {
+  const { t } = useTranslation("branding");
   return (
     <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]">
       <div className="border-b border-[oklch(from_var(--color-border)_l_c_h_/_0.5)] px-4 py-2.5">
         <h4 className="text-[12.5px] font-semibold tracking-tight text-[var(--color-foreground)]">
-          Brand assets
+          {t("assets")}
         </h4>
         <p className="mt-0.5 text-[11.5px] leading-relaxed text-[var(--color-muted-foreground)]">
-          URLs to your hosted brand assets. Upload via the Files module first,
-          then paste the resulting public URL here.
+          {t("assetsHint")}
         </p>
       </div>
       <div className="space-y-4 p-4">
         <AssetField
           id="logo-url"
-          label="Logo URL"
+          label={t("logo")}
           value={assets.logoUrl ?? ""}
           onChange={(v) =>
             onChange({ logoUrl: v || null, deleteLogo: v.length === 0 })
@@ -319,7 +324,7 @@ function BrandAssetsEditor({
         />
         <AssetField
           id="logo-dark-url"
-          label="Logo URL (dark mode)"
+          label={t("logoDark")}
           value={assets.logoDarkUrl ?? ""}
           onChange={(v) =>
             onChange({ logoDarkUrl: v || null, deleteLogoDark: v.length === 0 })
@@ -327,7 +332,7 @@ function BrandAssetsEditor({
         />
         <AssetField
           id="favicon-url"
-          label="Favicon URL"
+          label={t("favicon")}
           value={assets.faviconUrl ?? ""}
           onChange={(v) =>
             onChange({ faviconUrl: v || null, deleteFavicon: v.length === 0 })
@@ -383,6 +388,7 @@ function AssetField({
 // ─────────────────────────────────────────────────────────────────────────
 
 function ThemePreview({ palette, label }: { palette: PaletteDto; label: string }) {
+  const { t } = useTranslation("branding");
   return (
     <div
       className="overflow-hidden rounded-xl border border-[var(--color-border)]"
@@ -418,7 +424,7 @@ function ThemePreview({ palette, label }: { palette: PaletteDto; label: string }
               className="text-[13px] font-semibold"
               style={{ color: palette.secondary }}
             >
-              Sample tenant page
+              {t("sample")}
             </span>
             <span
               className="rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.1em]"
@@ -431,8 +437,7 @@ function ThemePreview({ palette, label }: { palette: PaletteDto; label: string }
             className="mb-4 text-[12.5px] leading-relaxed"
             style={{ color: palette.secondary, opacity: 0.72 }}
           >
-            A short paragraph rendered with the chosen body color over the chosen
-            surface, on the chosen page background. Action buttons use the primary token.
+            {t("sampleBody")}
           </p>
           <div className="flex flex-wrap gap-2">
             {/* Primary action */}
@@ -440,7 +445,7 @@ function ThemePreview({ palette, label }: { palette: PaletteDto; label: string }
               className="inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium shadow-sm"
               style={{ backgroundColor: palette.primary, color: palette.surface }}
             >
-              Primary action
+              {t("primaryAction")}
             </span>
             {/* Outline secondary */}
             <span
@@ -451,7 +456,7 @@ function ThemePreview({ palette, label }: { palette: PaletteDto; label: string }
                 backgroundColor: "transparent",
               }}
             >
-              Secondary
+              {t("secondary")}
             </span>
             {/* Warning pill */}
             <span
@@ -479,5 +484,5 @@ function apiErr(err: unknown): string {
     return err.problem?.detail ?? err.problem?.title ?? err.message;
   }
   if (err instanceof Error) return err.message;
-  return "Unknown error";
+  return i18n.t("branding:unknownError");
 }

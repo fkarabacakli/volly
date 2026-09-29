@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Search, UserCheck, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -26,7 +27,7 @@ export function UserPicker({
   value,
   onChange,
   initialSelected,
-  placeholder = "Search by name or email…",
+  placeholder,
   disabled,
 }: {
   value: string | null;
@@ -35,6 +36,7 @@ export function UserPicker({
   placeholder?: string;
   disabled?: boolean;
 }) {
+  const { t } = useTranslation("ui");
   const [selected, setSelected] = useState<UserDto | null>(initialSelected ?? null);
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -128,7 +130,7 @@ export function UserPicker({
               variant="ghost"
               size="sm"
               onClick={clear}
-              aria-label="Clear selection"
+              aria-label={t("picker.clear")}
               className="shrink-0"
             >
               <X className="h-3.5 w-3.5" />
@@ -145,7 +147,7 @@ export function UserPicker({
         />
         <Input
           type="search"
-          placeholder={selected ? "Search to reassign…" : placeholder}
+          placeholder={selected ? t("picker.reassign") : (placeholder ?? t("picker.placeholder"))}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -176,7 +178,7 @@ export function UserPicker({
                 No users match "{debounced}".
               </div>
             ) : (
-              <div role="listbox" aria-label="Search results">
+              <div role="listbox" aria-label={t("picker.results")}>
                 {results.map((u) => (
                   <div key={u.id}>
                     <button

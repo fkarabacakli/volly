@@ -1,5 +1,7 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Activity, Inbox } from "lucide-react";
+import { currentLocale } from "@/i18n";
 import { useSseEvents, useSseStatus, type SseEvent } from "@/sse/sse-context";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,15 +14,14 @@ import {
   type EntityStatusTone,
 } from "@/components/list";
 
-const timeFmt = new Intl.DateTimeFormat("en-US", {
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  hour12: false,
-});
 
 function formatTime(ts: number) {
-  return timeFmt.format(new Date(ts));
+  return new Intl.DateTimeFormat(currentLocale(), {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(new Date(ts));
 }
 
 function payloadSummary(data: unknown, raw: string): string {
@@ -67,6 +68,7 @@ function entityLabel(data: unknown): string {
 const DESKTOP_GRID = "grid-cols-[1fr_240px_120px]";
 
 export function ActivityPage() {
+  const { t } = useTranslation("activityLog");
   const { status, eventCount } = useSseStatus();
   const { events } = useSseEvents();
 
@@ -77,15 +79,15 @@ export function ActivityPage() {
     <div className="space-y-4 sm:space-y-6">
       <EntityPageHeader
         icon={Activity}
-        title="Live activity"
+        title={t("title")}
         total={eventCount}
         unit="event"
-        description="Full event log streamed from the API over Server-Sent Events."
+        description={t("description")}
       >
         {isLive ? (
-          <Badge variant="success">streaming</Badge>
+          <Badge variant="success">{t("streaming")}</Badge>
         ) : status === "error" ? (
-          <Badge variant="danger">offline</Badge>
+          <Badge variant="danger">{t("offline")}</Badge>
         ) : (
           <Badge variant="default">{status}</Badge>
         )}
@@ -94,11 +96,11 @@ export function ActivityPage() {
       {items.length === 0 ? (
         <EntityEmpty
           icon={Inbox}
-          title={isLive ? "Listening for activity" : "No events yet"}
+          title={isLive ? t("listening") : t("noEvents")}
           body={
             isLive
-              ? "The stream is open. Events will appear here as the backend publishes them."
-              : "The activity stream is not connected. Events will queue once the connection comes online."
+              ? t("openBody")
+              : t("closedBody")
           }
         />
       ) : (
@@ -118,7 +120,7 @@ export function ActivityPage() {
             role="log"
             aria-live="polite"
             aria-relevant="additions"
-            aria-label="Activity events"
+            aria-label={t("events")}
           >
             {items.map((ev) => (
               <MobileCard key={ev.id} ev={ev} />
@@ -131,12 +133,12 @@ export function ActivityPage() {
             role="log"
             aria-live="polite"
             aria-relevant="additions"
-            aria-label="Activity events"
+            aria-label={t("events")}
           >
             <EntityListHeader className={DESKTOP_GRID}>
-              <span>Action</span>
-              <span>Entity</span>
-              <span className="text-right">Time</span>
+              <span>{t("colAction")}</span>
+              <span>{t("colEntity")}</span>
+              <span className="text-right">{t("colTime")}</span>
             </EntityListHeader>
             {items.map((ev, i) => (
               <DesktopRow

@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { captureRequest, mockJsonResponse, mockProblemDetails } from "../helpers/api-mocks";
+import { ENGLISH_UI } from "../helpers/language";
+
+test.use({ storageState: ENGLISH_UI });
 
 // Helper — builds the URL the email link would produce.
 const VALID_LINK =

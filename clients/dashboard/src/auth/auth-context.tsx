@@ -5,6 +5,7 @@ import { decodeJwt, isTokenExpired, type JwtClaims } from "@/auth/jwt";
 import { issueToken } from "@/auth/api";
 import { refreshAccessToken } from "@/lib/api-client";
 import { endImpersonation, getMyPermissions, startImpersonation } from "@/api/identity";
+import { i18n } from "@/i18n";
 
 export type AuthUser = {
   id: string;
@@ -231,9 +232,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const claims = decodeJwt(tokens.accessToken);
       if (claims?.tenant === "root") {
         tokenStore.clear();
-        throw new Error(
-          "SuperAdmin accounts must use the admin app. Sign in there instead.",
-        );
+        throw new Error(i18n.t("misc:superAdminBlocked"));
       }
       tokenStore.setTokens(tokens.accessToken, tokens.refreshToken);
       // Drop any cached query state from before login. Without this, a
@@ -304,7 +303,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // back to whatever we stashed locally; the operator may need to
       // re-authenticate if the stashed access token has expired.
       tokenStore.restoreStashedActor();
-      throw new Error("End impersonation failed; restored local session.");
+      throw new Error(i18n.t("misc:endImpersonationFailed"));
     } finally {
       queryClient.clear();
     }

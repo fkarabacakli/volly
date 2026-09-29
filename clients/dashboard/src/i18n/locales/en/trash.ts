@@ -1,0 +1,27 @@
+import type { Messages } from "../tr";
+
+export const trash: Messages["trash"] = {
+  tabs: { products: "Products", brands: "Brands", categories: "Categories", tickets: "Tickets", files: "Files" },
+  plural: { products: "products", brands: "brands", categories: "categories", tickets: "tickets", files: "files" },
+  singular: { products: "product", brands: "brand", categories: "category", tickets: "ticket", files: "file" },
+  title: "Recycle bin",
+  description: "Soft-deleted records, kept indefinitely until you restore them. Restoring a row brings it back to its parent list with the same ID and history intact.",
+  noBins: "No recycle bins available",
+  noBinsBody: "You don't have permission to restore deleted records in this tenant. Ask an administrator if you think you should.",
+  sections: "Trash sections",
+  restored: { products: "Product restored", brands: "Brand restored", categories: "Category restored", tickets: "Ticket restored", files: "File restored" },
+  sku: "SKU {{sku}}",
+  emptyTitle: "The {{plural}} trash is empty",
+  emptyBody: "Soft-deleted {{plural}} land here for as long as you want — no automatic purge. Anything you remove from the main list can be recovered.",
+  colEntity: "Entity",
+  colDeletedBy: "Deleted by",
+  colDeletedAt: "Deleted at",
+  colActions: "Actions",
+  restoreTitle: "Restore {{singular}}?",
+  restoreBody: "<em>{{name}}</em> will be moved back to its {{singular}} list with the same ID and history intact.",
+  cancel: "Cancel",
+  restoreNamed: "Restore {{singular}}",
+  restoring: "Restoring…",
+  restore: "Restore",
+  by: "by {{id}}",
+};

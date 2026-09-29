@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -9,6 +10,7 @@ import {
   type InvoiceDto,
   type InvoiceLineItemDto,
   type InvoiceStatus,
+  invoiceStatusLabel,
 } from "@/api/billing";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -47,6 +49,7 @@ function formatPeriod(year: number, month: number) {
 // ────────────────────────────────────────────────────────────────────
 
 export function InvoiceDetailPage() {
+  const { t } = useTranslation("billing");
   const { id = "" } = useParams<{ id: string }>();
 
   const query = useQuery({
@@ -59,7 +62,7 @@ export function InvoiceDetailPage() {
 
   return (
     <div className="pb-12">
-      <EntityDetailBack to="/invoices" label="Back to invoices" />
+      <EntityDetailBack to="/invoices" label={t("detail.back")} />
 
       {query.isError && (
         <div className="mb-5">
@@ -83,24 +86,25 @@ export function InvoiceDetailPage() {
 // ────────────────────────────────────────────────────────────────────
 
 function InvoiceBody({ invoice }: { invoice: InvoiceDto }) {
+  const { t } = useTranslation("billing");
   return (
     <div className="space-y-5">
       <InvoiceHeader invoice={invoice} />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_300px]">
         {/* Left: line items + totals */}
-        <EntityDetailSection title="Line items" icon={FileText} padded={false}>
+        <EntityDetailSection title={t("detail.lineItems")} icon={FileText} padded={false}>
           <LineItemsTable invoice={invoice} />
         </EntityDetailSection>
 
         {/* Right: meta + dates + notes */}
         <aside className="space-y-5">
-          <EntityDetailSection title="Details" icon={Receipt}>
+          <EntityDetailSection title={t("detail.details")} icon={Receipt}>
             <DetailsBody invoice={invoice} />
           </EntityDetailSection>
 
           {invoice.notes && (
-            <EntityDetailSection title="Notes" icon={FileText}>
+            <EntityDetailSection title={t("detail.notes")} icon={FileText}>
               <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-[var(--color-foreground)]/90">
                 {invoice.notes}
               </p>
@@ -113,6 +117,7 @@ function InvoiceBody({ invoice }: { invoice: InvoiceDto }) {
 }
 
 function InvoiceHeader({ invoice }: { invoice: InvoiceDto }) {
+  const { t } = useTranslation("billing");
   const [downloading, setDownloading] = useState(false);
 
   const onDownload = async () => {
@@ -121,7 +126,7 @@ function InvoiceHeader({ invoice }: { invoice: InvoiceDto }) {
     try {
       await downloadInvoicePdf(invoice.id, invoice.invoiceNumber);
     } catch (err) {
-      toast.error("Download failed", { description: describe(err) });
+      toast.error(t("detail.downloadFailed"), { description: describe(err) });
     } finally {
       setDownloading(false);
     }
@@ -151,7 +156,7 @@ function InvoiceHeader({ invoice }: { invoice: InvoiceDto }) {
                 {invoice.invoiceNumber}
               </h1>
               <EntityStatusBadge tone={statusTone(invoice.status)}>
-                {invoice.status}
+                {invoiceStatusLabel(invoice.status)}
               </EntityStatusBadge>
               {invoice.purpose && (
                 <EntityStatusBadge tone="default">{invoice.purpose}</EntityStatusBadge>
@@ -175,7 +180,7 @@ function InvoiceHeader({ invoice }: { invoice: InvoiceDto }) {
             className="gap-1.5"
           >
             <Download className="size-3.5" />
-            {downloading ? "Preparing…" : "Download PDF"}
+            {downloading ? t("detail.preparing") : t("detail.downloadPdf")}
           </Button>
         </div>
       </div>
@@ -190,16 +195,17 @@ function InvoiceHeader({ invoice }: { invoice: InvoiceDto }) {
 const LINE_GRID = "grid-cols-[1fr_80px_110px_110px] sm:grid-cols-[1fr_100px_130px_130px]";
 
 function LineItemsTable({ invoice }: { invoice: InvoiceDto }) {
+  const { t } = useTranslation("billing");
   const items = invoice.lineItems ?? [];
 
   if (items.length === 0) {
     return (
       <div className="px-5 py-10 text-center">
         <p className="text-[13px] font-semibold text-[var(--color-foreground)]">
-          No line items
+          {t("detail.noLineItems")}
         </p>
         <p className="mt-1 text-[11.5px] text-[var(--color-muted-foreground)]">
-          This invoice has no itemized charges.
+          {t("detail.noLineItemsBody")}
         </p>
       </div>
     );
@@ -210,10 +216,10 @@ function LineItemsTable({ invoice }: { invoice: InvoiceDto }) {
       <div
         className={`grid ${LINE_GRID} items-center gap-3 border-b border-[var(--color-border)] bg-[oklch(from_var(--color-muted)_l_c_h_/_0.4)] px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]`}
       >
-        <span>Description</span>
-        <span className="text-right">Qty</span>
-        <span className="text-right">Unit price</span>
-        <span className="text-right">Amount</span>
+        <span>{t("detail.colDescription")}</span>
+        <span className="text-right">{t("detail.colQty")}</span>
+        <span className="text-right">{t("detail.colUnitPrice")}</span>
+        <span className="text-right">{t("detail.colAmount")}</span>
       </div>
 
       {items.map((item, i) => (
@@ -230,7 +236,7 @@ function LineItemsTable({ invoice }: { invoice: InvoiceDto }) {
         className={`grid ${LINE_GRID} items-center gap-3 border-t border-[var(--color-border)] bg-[oklch(from_var(--color-muted)_l_c_h_/_0.25)] px-5 py-3.5`}
       >
         <span className="text-[12px] font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">
-          Total
+          {t("detail.total")}
         </span>
         <span />
         <span />
@@ -288,37 +294,38 @@ function LineItemRow({
 // ────────────────────────────────────────────────────────────────────
 
 function DetailsBody({ invoice }: { invoice: InvoiceDto }) {
+  const { t } = useTranslation("billing");
   return (
     <dl className="space-y-2.5 text-[12.5px]">
-      <Row label="Status">
+      <Row label={t("detail.status")}>
         <EntityStatusBadge tone={statusTone(invoice.status)}>
-          {invoice.status}
+          {invoiceStatusLabel(invoice.status)}
         </EntityStatusBadge>
       </Row>
-      <Row label="Currency">{invoice.currency}</Row>
-      <Row label="Period">{formatPeriod(invoice.periodYear, invoice.periodMonth)}</Row>
-      <Row label="Created">{formatDate(invoice.createdAtUtc)}</Row>
-      {invoice.issuedAtUtc && <Row label="Issued">{formatDate(invoice.issuedAtUtc)}</Row>}
+      <Row label={t("detail.currency")}>{invoice.currency}</Row>
+      <Row label={t("detail.period")}>{formatPeriod(invoice.periodYear, invoice.periodMonth)}</Row>
+      <Row label={t("detail.created")}>{formatDate(invoice.createdAtUtc)}</Row>
+      {invoice.issuedAtUtc && <Row label={t("detail.issued")}>{formatDate(invoice.issuedAtUtc)}</Row>}
       {invoice.dueAtUtc && (
-        <Row label="Due" tone={invoice.status === "Issued" ? "warning" : undefined}>
+        <Row label={t("detail.due")} tone={invoice.status === "Issued" ? "warning" : undefined}>
           {formatDate(invoice.dueAtUtc)}
         </Row>
       )}
       {invoice.paidAtUtc && (
-        <Row label="Paid" tone="success">
+        <Row label={t("detail.paid")} tone="success">
           {formatDate(invoice.paidAtUtc)}
         </Row>
       )}
       {invoice.voidedAtUtc && (
-        <Row label="Voided" tone="danger">
+        <Row label={t("detail.voided")} tone="danger">
           {formatDate(invoice.voidedAtUtc)}
         </Row>
       )}
       {invoice.periodStartUtc && (
-        <Row label="Period start">{formatDate(invoice.periodStartUtc)}</Row>
+        <Row label={t("detail.periodStart")}>{formatDate(invoice.periodStartUtc)}</Row>
       )}
       {invoice.periodEndUtc && (
-        <Row label="Period end">{formatDate(invoice.periodEndUtc)}</Row>
+        <Row label={t("detail.periodEnd")}>{formatDate(invoice.periodEndUtc)}</Row>
       )}
     </dl>
   );
@@ -377,19 +384,20 @@ function DetailSkeleton() {
 }
 
 function NotFoundPanel() {
+  const { t } = useTranslation("billing");
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-8 py-16 text-center">
       <div className="mb-5 grid size-16 place-items-center rounded-2xl bg-[oklch(from_var(--color-primary)_l_c_h_/_0.08)]">
         <Receipt className="size-7 text-[var(--color-primary)]" />
       </div>
       <h3 className="mb-1.5 text-[17px] font-semibold text-[var(--color-foreground)]">
-        Invoice not found
+        {t("detail.notFound")}
       </h3>
       <p className="mb-6 text-[13px] text-[var(--color-muted-foreground)]">
-        It may not belong to your tenant, or the link may be wrong.
+        {t("detail.notFoundBody")}
       </p>
       <Button asChild variant="outline" size="sm">
-        <Link to="/invoices">Back to invoices</Link>
+        <Link to="/invoices">{t("detail.back")}</Link>
       </Button>
     </div>
   );

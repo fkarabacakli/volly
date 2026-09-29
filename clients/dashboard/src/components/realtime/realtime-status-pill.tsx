@@ -1,12 +1,13 @@
+import { useTranslation } from "react-i18next";
 import { useRealtime } from "@/realtime/realtime-context";
 import { cn } from "@/lib/cn";
 
-const LABEL: Record<string, string> = {
-  idle: "Offline",
-  connecting: "Connecting",
-  connected: "Live",
-  reconnecting: "Reconnecting",
-  error: "Offline",
+const LABEL: Record<string, "realtime.offline" | "realtime.connecting" | "realtime.live" | "realtime.reconnecting"> = {
+  idle: "realtime.offline",
+  connecting: "realtime.connecting",
+  connected: "realtime.live",
+  reconnecting: "realtime.reconnecting",
+  error: "realtime.offline",
 };
 
 /**
@@ -26,14 +27,15 @@ export function RealtimeStatusPill({
   className?: string;
   announce?: boolean;
 }) {
+  const { t } = useTranslation("misc");
   const { status } = useRealtime();
-  const label = LABEL[status] ?? "Offline";
+  const label = t(LABEL[status] ?? "realtime.offline");
   return (
     <span
       className={cn("chat-status-pill", className)}
       data-status={status}
       {...(announce ? { role: "status", "aria-live": "polite" as const } : {})}
-      title={`Realtime: ${label}`}
+      title={t("realtime.title", { label })}
     >
       <span aria-hidden className="chat-status-dot" />
       <span>{label}</span>

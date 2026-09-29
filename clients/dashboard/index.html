@@ -1,12 +1,10 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="tr" class="h-full">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>fullstackhero - Dashboard</title>
+    <title>Volly · Endüstriyel AI Platformu</title>
 
     <!-- Fonts — only the steady-state three are loaded eagerly:
          Figtree (body), Outfit (display), JetBrains Mono (mono/code).
@@ -69,9 +67,11 @@
           // Theme.
           var stored = localStorage.getItem("fsh.theme");
           var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          // No stored choice → light (the industrial panel's default);
+          // "system" follows the OS.
           var resolved = stored === "dark" || stored === "light"
             ? stored
-            : prefersDark ? "dark" : "light";
+            : stored === "system" && prefersDark ? "dark" : "light";
           if (resolved === "dark") document.documentElement.classList.add("dark");
 
           // Font — set --font-sans on :root.
@@ -90,10 +90,10 @@
             }
           }
 
-          // Accent — toggle accent-{id} class on :root. Rose is the
-          // baseline (no class needed) and matches the warm-paper default.
+          // Accent — toggle accent-{id} class on :root. Emerald is the
+          // baseline in globals.css (no class needed).
           var savedAccent = localStorage.getItem("fsh.accent");
-          if (savedAccent && savedAccent !== "rose" && ACCENTS.indexOf(savedAccent) !== -1) {
+          if (savedAccent && savedAccent !== "emerald" && ACCENTS.indexOf(savedAccent) !== -1) {
             document.documentElement.classList.add("accent-" + savedAccent);
           }
 

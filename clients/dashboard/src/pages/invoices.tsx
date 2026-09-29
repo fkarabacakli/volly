@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Receipt } from "lucide-react";
@@ -6,6 +7,7 @@ import {
   getMyInvoices,
   type InvoiceDto,
   type InvoiceStatus,
+  invoiceStatusLabel,
 } from "@/api/billing";
 import { Button } from "@/components/ui/button";
 import { ApiRequestError } from "@/lib/api-client";
@@ -24,6 +26,7 @@ import {
   ToneIconTile,
   type EntityStatusTone,
 } from "@/components/list";
+import { currentLocale } from "@/i18n";
 import { formatDate } from "@/lib/list-helpers";
 
 const PAGE_SIZE = 20;
@@ -34,7 +37,7 @@ const PAGE_SIZE = 20;
 
 function formatMoney(amount: number, currency: string) {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(currentLocale(), {
       style: "currency",
       currency,
     }).format(amount);
@@ -69,6 +72,7 @@ const DESKTOP_GRID =
 // ────────────────────────────────────────────────────────────────────
 
 export function InvoicesPage() {
+  const { t } = useTranslation("billing");
   const { user } = useAuth();
   const [pageNumber, setPageNumber] = useState(1);
   const query = useQuery({
@@ -115,7 +119,7 @@ export function InvoicesPage() {
     query.error instanceof ApiRequestError
       ? query.error.problem?.detail ?? query.error.message
       : query.error
-        ? "Failed to load invoices."
+        ? t("invoices.loadFailed")
         : null;
 
   const searchActive = search.trim().length > 0;
@@ -126,16 +130,16 @@ export function InvoicesPage() {
     <div className="space-y-4 sm:space-y-6">
       <EntityPageHeader
         icon={Receipt}
-        title="Invoices"
+        title={t("invoices.title")}
         total={query.data?.totalCount ?? null}
         unit="invoice"
-        description="Your tenant's billing history, newest first."
+        description={t("invoices.description")}
       />
 
       <EntitySearch
         value={search}
         onChange={setSearch}
-        placeholder="Search by invoice number, status, or period…"
+        placeholder={t("invoices.searchPlaceholder")}
       />
 
       {errorMessage && <ErrorBand message={errorMessage} />}
@@ -145,11 +149,11 @@ export function InvoicesPage() {
       ) : filtered.length === 0 ? (
         <EntityEmpty
           icon={Receipt}
-          title={searchActive ? "No invoices found" : "No invoices yet"}
+          title={searchActive ? t("invoices.noneFound") : t("invoices.noneYet")}
           body={
             searchActive
-              ? `Nothing matches "${search.trim()}". Try a different term or clear the search.`
-              : "Once your tenant has been billed for a period, invoices will appear here."
+              ? t("invoices.nothingMatches", { term: search.trim() })
+              : t("invoices.emptyBody")
           }
           action={
             searchActive ? (
@@ -158,7 +162,7 @@ export function InvoicesPage() {
                 onClick={() => setSearch("")}
                 className="h-9 rounded-lg px-4 text-[13px]"
               >
-                Clear search
+                {t("invoices.clearSearch")}
               </Button>
             ) : undefined
           }
@@ -168,15 +172,11 @@ export function InvoicesPage() {
           <div className="mb-3 flex items-center justify-between">
             <p className="text-[12px] font-medium text-[var(--color-muted-foreground)]">
               {searchActive ? (
-                <>
-                  {filtered.length} invoice{filtered.length === 1 ? "" : "s"} matched
-                  on this page
-                </>
+                t("invoices.matched", { count: filtered.length })
               ) : (
                 <>
-                  Showing {sorted.length} of {totalCount} invoice
-                  {totalCount === 1 ? "" : "s"}
-                  {totalPages > 1 ? ` · page ${pageNumber} of ${totalPages}` : ""}
+                  {t("invoices.showing", { shown: sorted.length, total: totalCount })}
+                  {totalPages > 1 ? t("invoices.pageOf", { page: pageNumber, total: totalPages }) : ""}
                 </>
               )}
             </p>
@@ -192,11 +192,11 @@ export function InvoicesPage() {
           {/* Desktop: table */}
           <EntityListCard className="hidden md:block">
             <EntityListHeader className={DESKTOP_GRID}>
-              <span>Invoice #</span>
-              <span>Customer</span>
-              <span className="text-right">Amount</span>
-              <span>Status</span>
-              <span>Due date</span>
+              <span>{t("invoices.colNumber")}</span>
+              <span>{t("invoices.colCustomer")}</span>
+              <span className="text-right">{t("invoices.colAmount")}</span>
+              <span>{t("invoices.colStatus")}</span>
+              <span>{t("invoices.colDue")}</span>
             </EntityListHeader>
             {filtered.map((invoice, i) => (
               <DesktopRow
@@ -229,6 +229,7 @@ export function InvoicesPage() {
 // ────────────────────────────────────────────────────────────────────
 
 function MobileCard({ invoice }: { invoice: InvoiceDto }) {
+  const { t } = useTranslation("billing");
   return (
     <Link
       to={`/invoices/${invoice.id}`}
@@ -242,7 +243,7 @@ function MobileCard({ invoice }: { invoice: InvoiceDto }) {
                 {invoice.invoiceNumber}
               </code>
               <EntityStatusBadge tone={statusTone(invoice.status)}>
-                {invoice.status}
+                {invoiceStatusLabel(invoice.status)}
               </EntityStatusBadge>
             </div>
             <p className="mt-0.5 font-mono text-[11px] text-[var(--color-muted-foreground)]">
@@ -256,7 +257,7 @@ function MobileCard({ invoice }: { invoice: InvoiceDto }) {
           </div>
           {invoice.dueAtUtc && invoice.status === "Issued" && (
             <div className="mt-0.5 font-mono text-[10.5px] text-[var(--color-warning)]">
-              due {formatDate(invoice.dueAtUtc)}
+              {t("invoices.due", { date: formatDate(invoice.dueAtUtc) })}
             </div>
           )}
         </div>
@@ -272,6 +273,7 @@ function DesktopRow({
   invoice: InvoiceDto;
   isLast: boolean;
 }) {
+  const { t } = useTranslation("billing");
   const navigate = useNavigate();
   return (
     <EntityListRow
@@ -308,7 +310,7 @@ function DesktopRow({
       {/* Status */}
       <span>
         <EntityStatusBadge tone={statusTone(invoice.status)}>
-          {invoice.status}
+          {invoiceStatusLabel(invoice.status)}
         </EntityStatusBadge>
       </span>
 
@@ -321,7 +323,7 @@ function DesktopRow({
             formatDate(invoice.dueAtUtc)
           )
         ) : invoice.paidAtUtc && invoice.status === "Paid" ? (
-          <span className="text-[var(--color-success)]">paid {formatDate(invoice.paidAtUtc)}</span>
+          <span className="text-[var(--color-success)]">{t("invoices.paid", { date: formatDate(invoice.paidAtUtc) })}</span>
         ) : (
           "—"
         )}

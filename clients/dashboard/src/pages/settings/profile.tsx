@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera, Fingerprint, UserCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ import { SettingsSection } from "@/pages/settings/settings-layout";
 const PROFILE_KEY = ["identity", "me"] as const;
 
 export function ProfileSettings() {
+  const { t } = useTranslation("account");
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -73,7 +75,7 @@ export function ProfileSettings() {
   const saveMutation = useMutation({
     mutationFn: updateMyProfile,
     onSuccess: async () => {
-      toast.success("Profile saved");
+      toast.success(t("profile.saved"));
       // The save moved the profile on, so the tag the form holds is spent: adopt the new one or
       // a second save in the same sitting would 412 against the user's own write. Awaited rather
       // than fire-and-forget: isPending has to stay true until the new tag is in hand, or the
@@ -89,9 +91,8 @@ export function ProfileSettings() {
       // edits on screen, adopt the current version, and let them decide whether to save again.
       if (err instanceof ApiRequestError && err.status === 412) {
         await adoptCurrentVersion();
-        toast.warning("Profile changed elsewhere", {
-          description:
-            "Someone updated this profile while you were editing. Review your changes and save again to apply them.",
+        toast.warning(t("profile.conflictTitle"), {
+          description: t("profile.conflictBody"),
         });
         return;
       }
@@ -99,8 +100,8 @@ export function ProfileSettings() {
       const message =
         err instanceof ApiRequestError
           ? err.problem?.detail ?? err.problem?.title ?? err.message
-          : "Failed to save profile";
-      toast.error("Save failed", { description: message });
+          : t("profile.saveFailedFallback");
+      toast.error(t("profile.saveFailed"), { description: message });
     },
   });
 
@@ -139,7 +140,7 @@ export function ProfileSettings() {
   const imageMutation = useMutation({
     mutationFn: (url: string | null) => setProfileImage(url),
     onSuccess: async () => {
-      toast.success("Profile image updated");
+      toast.success(t("profile.imageUpdated"));
       // Setting the image is a second write to the same row, so ASP.NET Identity rotates the
       // concurrency stamp and the tag this form is holding is spent. Adopting the new version (which
       // also refreshes the cache, so the topbar avatar still updates) keeps the next save from
@@ -150,7 +151,7 @@ export function ProfileSettings() {
       const message =
         e instanceof ApiRequestError
           ? (e.problem?.detail ?? e.problem?.title ?? e.message)
-          : "Failed to update profile image";
+          : t("profile.imageFailed");
       toast.error(message);
     },
   });
@@ -169,9 +170,9 @@ export function ProfileSettings() {
         </div>
       )}
       <SettingsSection
-        title="Photo"
+        title={t("profile.photo")}
         icon={Camera}
-        description="Shown in the topbar and on your activity. Square crops work best — JPG, PNG, or WebP."
+        description={t("profile.photoHint")}
       >
         <ImageInput
           value={profile?.imageUrl ?? ""}
@@ -183,9 +184,9 @@ export function ProfileSettings() {
       </SettingsSection>
 
       <SettingsSection
-        title="Identity"
+        title={t("profile.identity")}
         icon={UserCircle2}
-        description="Your name and contact details, visible across the dashboard."
+        description={t("profile.identityHint")}
         footer={
           <div className="flex items-center justify-end gap-2">
             <Button
@@ -195,16 +196,16 @@ export function ProfileSettings() {
               disabled={saving || !dirty || !canSave}
               size="sm"
             >
-              Reset
+              {t("profile.reset")}
             </Button>
             <Button type="submit" disabled={saving || !dirty || !canSave} size="sm">
-              {saving ? "Saving…" : "Save changes"}
+              {saving ? t("profile.saving") : t("profile.save")}
             </Button>
           </div>
         }
       >
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field id="first-name" label="First name">
+          <Field id="first-name" label={t("profile.firstName")}>
             <Input
               id="first-name"
               value={firstName}
@@ -214,7 +215,7 @@ export function ProfileSettings() {
               className="h-10 text-[13px]"
             />
           </Field>
-          <Field id="last-name" label="Last name">
+          <Field id="last-name" label={t("profile.lastName")}>
             <Input
               id="last-name"
               value={lastName}
@@ -224,7 +225,7 @@ export function ProfileSettings() {
               className="h-10 text-[13px]"
             />
           </Field>
-          <Field id="email" label="Email">
+          <Field id="email" label={t("profile.email")}>
             <Input
               id="email"
               type="email"
@@ -234,10 +235,10 @@ export function ProfileSettings() {
               className="h-10 cursor-not-allowed bg-[var(--color-muted)] text-[13px]"
             />
             <p className="mt-1 text-[11px] text-[var(--color-muted-foreground)]">
-              Contact your tenant admin to change your sign-in email.
+              {t("profile.emailHint")}
             </p>
           </Field>
-          <Field id="phone" label="Phone">
+          <Field id="phone" label={t("profile.phone")}>
             <Input
               id="phone"
               type="tel"
@@ -253,9 +254,9 @@ export function ProfileSettings() {
       </SettingsSection>
 
       <SettingsSection
-        title="Subject identifier"
+        title={t("profile.subject")}
         icon={Fingerprint}
-        description="The unique ID this account uses inside the platform. Read-only."
+        description={t("profile.subjectHint")}
       >
         <code className="block w-full overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 font-mono text-xs">
           {profile?.id ?? user?.id ?? "—"}

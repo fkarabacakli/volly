@@ -1,3 +1,4 @@
+import { i18n } from "@/i18n";
 import { apiFetch } from "@/lib/api-client";
 
 // ────────────────────────────────────────────────────────────────────────
@@ -84,8 +85,24 @@ export const AUDIT_TAG_LABELS: Array<{ flag: number; name: string }> = [
   { flag: AuditTag.Authorization, name: "Authz" },
 ];
 
+const TAG_KEYS: Record<number, keyof typeof AuditTag> = Object.fromEntries(
+  Object.entries(AuditTag).map(([k, v]) => [v, k as keyof typeof AuditTag]),
+);
+
+/** Localized labels (audits namespace); the constant maps above stay the English source. */
+export function auditEventTypeLabel(t: AuditEventType): string {
+  return i18n.t(`audits:eventType.${t}`);
+}
+export function auditSeverityLabel(s: AuditSeverity): string {
+  return i18n.t(`audits:severity.${s}`);
+}
+export function auditTagLabel(flag: number): string {
+  const key = TAG_KEYS[flag];
+  return key && key !== "None" ? i18n.t(`audits:tags.${key}`) : String(flag);
+}
+
 export function decodeTags(mask: number): string[] {
-  return AUDIT_TAG_LABELS.filter((t) => (mask & t.flag) !== 0).map((t) => t.name);
+  return AUDIT_TAG_LABELS.filter((t) => (mask & t.flag) !== 0).map((t) => auditTagLabel(t.flag));
 }
 
 // ────────────────────────────────────────────────────────────────────────

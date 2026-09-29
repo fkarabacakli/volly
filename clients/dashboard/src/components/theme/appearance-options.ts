@@ -7,6 +7,8 @@
  * `--brand-*` stops the entire token system reads from.
  */
 
+import { i18n } from "@/i18n";
+
 export type FontOption = {
   id: string;
   label: string;
@@ -106,15 +108,15 @@ export type AccentOption = {
 };
 
 export const accents: AccentOption[] = [
-  { id: "rose",    label: "Rose",    description: "Editorial, warm-paper default.",  swatch: "oklch(0.575 0.232  13)" },
+  { id: "emerald", label: "Emerald", description: "Industrial default.",             swatch: "oklch(0.545 0.170 152)" },
+  { id: "rose",    label: "Rose",    description: "Editorial, warm.",                swatch: "oklch(0.575 0.232  13)" },
   { id: "indigo",  label: "Indigo",  description: "Confident tech-forward chassis.", swatch: "oklch(0.555 0.220 268)" },
   { id: "violet",  label: "Violet",  description: "Saturated, expressive.",          swatch: "oklch(0.555 0.220 305)" },
   { id: "sky",     label: "Sky",     description: "Cool, calm, professional.",       swatch: "oklch(0.555 0.220 232)" },
-  { id: "emerald", label: "Emerald", description: "Fresh, success-leaning.",         swatch: "oklch(0.555 0.220 152)" },
   { id: "amber",   label: "Amber",   description: "Warm, energetic.",                swatch: "oklch(0.620 0.180  76)" },
 ];
 
-export const DEFAULT_ACCENT = "rose";
+export const DEFAULT_ACCENT = "emerald";
 export const CUSTOM_ACCENT_ID = "custom";
 
 export const FONT_STORAGE_KEY = "fsh.font";
@@ -207,4 +209,31 @@ export function buildCustomBrandStops(
     var: `--brand-${stop}`,
     value: `oklch(${l.toFixed(3)} ${(c * cScale).toFixed(3)} ${h.toFixed(0)})`,
   }));
+}
+
+// ─── Localised copy ─────────────────────────────────────────────────────
+// Labels/descriptions above are the English source; the UI reads them via
+// these helpers so they follow the active language (appearance namespace).
+
+const ACCENT_IDS = ["emerald", "rose", "indigo", "violet", "sky", "amber"] as const;
+type AccentId = (typeof ACCENT_IDS)[number];
+const FONT_IDS = [
+  "geist", "inter-tight", "dm-sans", "ibm-plex", "manrope", "plus-jakarta",
+  "outfit", "sora", "lexend", "figtree", "onest", "roboto-flex",
+] as const;
+type FontId = (typeof FONT_IDS)[number];
+
+const isAccentId = (id: string): id is AccentId => (ACCENT_IDS as readonly string[]).includes(id);
+const isFontId = (id: string): id is FontId => (FONT_IDS as readonly string[]).includes(id);
+
+export function accentText(a: AccentOption): { label: string; description: string } {
+  if (!isAccentId(a.id)) return { label: a.label, description: a.description };
+  return {
+    label: i18n.t(`appearance:accent.names.${a.id}.label`),
+    description: i18n.t(`appearance:accent.names.${a.id}.description`),
+  };
+}
+
+export function fontDescription(f: FontOption): string {
+  return isFontId(f.id) ? i18n.t(`appearance:font.descriptions.${f.id}`) : f.description;
 }

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   useEffect,
   useMemo,
@@ -53,6 +54,7 @@ import {
   EntityStatusBadge,
   Field,
 } from "@/components/list";
+import { i18n } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { describe } from "@/lib/list-helpers";
 
@@ -68,7 +70,7 @@ const DESKTOP_COLS =
 function fullName(u: UserDto): string {
   const parts = [u.firstName, u.lastName].filter(Boolean);
   if (parts.length > 0) return parts.join(" ");
-  return u.userName ?? u.email ?? "Unnamed user";
+  return u.userName ?? u.email ?? i18n.t("users:unnamed");
 }
 
 // ───────────────────────────────────────────────────────────────────────
@@ -76,6 +78,7 @@ function fullName(u: UserDto): string {
 // ───────────────────────────────────────────────────────────────────────
 
 export function UsersPage() {
+  const { t } = useTranslation("users");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
@@ -140,49 +143,49 @@ export function UsersPage() {
     <div className="space-y-4 sm:space-y-6">
       <EntityPageHeader
         icon={Users}
-        title="Users"
+        title={t("title")}
         total={data?.totalCount ?? null}
         unit="user"
-        description="Every member with access to this tenant. Register newcomers, review status, and manage roles."
+        description={t("description")}
       >
         <Button
           onClick={() => setRegisterOpen(true)}
           className="h-9 flex-1 gap-1.5 rounded-lg px-4 text-[13px] font-semibold sm:flex-none"
         >
           <Plus className="size-4" />
-          Register user
+          {t("register")}
         </Button>
       </EntityPageHeader>
 
       <EntitySearch
         value={search}
         onChange={setSearch}
-        placeholder="Search by name, username, or email…"
+        placeholder={t("searchPlaceholder")}
       />
 
       <div className="flex flex-wrap items-center gap-2">
         <EntityFilterPill
-          label="Account status"
+          label={t("accountStatus")}
           value={statusFilter}
           onChange={setStatusFilter}
           options={[
-            { value: "all", label: "All" },
-            { value: "active", label: "Active" },
-            { value: "inactive", label: "Inactive" },
+            { value: "all", label: t("all") },
+            { value: "active", label: t("active") },
+            { value: "inactive", label: t("inactive") },
           ]}
         />
         <EntityFilterPill
-          label="Email status"
+          label={t("emailStatus")}
           value={emailFilter}
           onChange={setEmailFilter}
           options={[
-            { value: "all", label: "Any email" },
-            { value: "confirmed", label: "Confirmed" },
-            { value: "unconfirmed", label: "Pending" },
+            { value: "all", label: t("anyEmail") },
+            { value: "confirmed", label: t("confirmed") },
+            { value: "unconfirmed", label: t("pending") },
           ]}
         />
         <Combobox
-          label="Role"
+          label={t("role")}
           value={roleFilter}
           onChange={setRoleFilter}
           options={(rolesQuery.data ?? []).map((r) => ({
@@ -200,13 +203,13 @@ export function UsersPage() {
       ) : items.length === 0 ? (
         <EntityEmpty
           icon={Users}
-          title={searchActive ? "No users found" : "No users yet"}
+          title={searchActive ? t("noneFound") : t("noneYet")}
           body={
             searchActive
               ? debouncedSearch
-                ? `Nothing matches "${debouncedSearch}". Try a different term or clear the filters.`
-                : "No users match the current filters."
-              : "Register the first member to seed this tenant. They'll receive a confirmation email if email confirmation is enabled."
+                ? t("nothingMatches", { term: debouncedSearch })
+                : t("noFilterMatch")
+              : t("emptyBody")
           }
           action={
             searchActive ? (
@@ -215,7 +218,7 @@ export function UsersPage() {
                 onClick={clearFilters}
                 className="h-9 rounded-lg px-4 text-[13px]"
               >
-                Clear filters
+                {t("clearFilters")}
               </Button>
             ) : (
               <Button
@@ -223,7 +226,7 @@ export function UsersPage() {
                 className="h-9 rounded-lg px-4 text-[13px]"
               >
                 <Plus className="mr-1.5 size-4" />
-                Register user
+                {t("register")}
               </Button>
             )
           }
@@ -247,9 +250,9 @@ export function UsersPage() {
           {/* Desktop: table */}
           <EntityListCard className="hidden md:block">
             <EntityListHeader className={DESKTOP_COLS}>
-              <span>Name</span>
-              <span>Username</span>
-              <span className="hidden lg:block">Status</span>
+              <span>{t("colName")}</span>
+              <span>{t("colUsername")}</span>
+              <span className="hidden lg:block">{t("colStatus")}</span>
               <span />
             </EntityListHeader>
 
@@ -295,12 +298,13 @@ export function UsersPage() {
 // ───────────────────────────────────────────────────────────────────────
 
 function UserMobileCard({ user }: { user: UserDto }) {
+  const { t } = useTranslation("users");
   const display = fullName(user);
   const href = user.id ? `/identity/users/${user.id}` : "#";
   return (
     <EntityMobileCard
       href={href}
-      aria-label={`Open user ${display}`}
+      aria-label={t("openUser", { name: display })}
       dim={!user.isActive}
     >
       <div className="flex items-center justify-between">
@@ -311,7 +315,7 @@ function UserMobileCard({ user }: { user: UserDto }) {
               {display}
             </p>
             <p className="mt-0.5 truncate text-[11px] text-[var(--color-muted-foreground)]">
-              {user.email ?? "no email"}
+              {user.email ?? t("noEmail")}
             </p>
           </div>
         </div>
@@ -319,10 +323,10 @@ function UserMobileCard({ user }: { user: UserDto }) {
       </div>
       <div className="mt-2 ml-[52px] flex flex-wrap items-center gap-1.5">
         <EntityStatusBadge tone={user.isActive ? "success" : "default"}>
-          {user.isActive ? "Active" : "Inactive"}
+          {user.isActive ? t("active") : t("inactive")}
         </EntityStatusBadge>
         <EntityStatusBadge tone={user.emailConfirmed ? "info" : "warning"}>
-          {user.emailConfirmed ? "Email confirmed" : "Email pending"}
+          {user.emailConfirmed ? t("emailConfirmed") : t("emailPending")}
         </EntityStatusBadge>
       </div>
     </EntityMobileCard>
@@ -330,6 +334,7 @@ function UserMobileCard({ user }: { user: UserDto }) {
 }
 
 function UserDesktopRow({ user, isLast }: { user: UserDto; isLast: boolean }) {
+  const { t } = useTranslation("users");
   const display = fullName(user);
   const href = user.id ? `/identity/users/${user.id}` : "#";
   return (
@@ -351,7 +356,7 @@ function UserDesktopRow({ user, isLast }: { user: UserDto; isLast: boolean }) {
               !user.email && "italic opacity-60",
             )}
           >
-            {user.email ?? "no email on file"}
+            {user.email ?? t("noEmailOnFile")}
           </span>
         </div>
       </Link>
@@ -367,10 +372,10 @@ function UserDesktopRow({ user, isLast }: { user: UserDto; isLast: boolean }) {
       {/* Status (lg+) */}
       <div className="hidden items-center gap-1.5 lg:flex">
         <EntityStatusBadge tone={user.isActive ? "success" : "default"}>
-          {user.isActive ? "Active" : "Inactive"}
+          {user.isActive ? t("active") : t("inactive")}
         </EntityStatusBadge>
         <EntityStatusBadge tone={user.emailConfirmed ? "info" : "warning"}>
-          {user.emailConfirmed ? "Confirmed" : "Pending"}
+          {user.emailConfirmed ? t("confirmed") : t("pending")}
         </EntityStatusBadge>
       </div>
 
@@ -392,6 +397,7 @@ function RegisterUserDialog({
   open: boolean;
   onClose: () => void;
 }) {
+  const { t } = useTranslation("users");
   const queryClient = useQueryClient();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -419,14 +425,14 @@ function RegisterUserDialog({
   const mutation = useMutation({
     mutationFn: (input: RegisterUserInput) => registerUser(input),
     onSuccess: () => {
-      toast.success("User registered", {
-        description: "An email confirmation may be required before sign-in.",
+      toast.success(t("registered"), {
+        description: t("registeredHint"),
       });
       void queryClient.invalidateQueries({ queryKey: ["identity", "users"] });
       onClose();
     },
     onError: (err) =>
-      toast.error("Registration failed", { description: describe(err) }),
+      toast.error(t("registerFailed"), { description: describe(err) }),
   });
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -448,16 +454,15 @@ function RegisterUserDialog({
       <DialogContent className="!max-w-lg">
         <form onSubmit={onSubmit}>
           <DialogHeader>
-            <DialogTitle>Register a member</DialogTitle>
+            <DialogTitle>{t("registerTitle")}</DialogTitle>
             <DialogDescription>
-              Add a new user to this tenant. Username and email must be unique.
-              Passwords need an uppercase letter, lowercase letter, and a digit.
+              {t("registerDescription")}
             </DialogDescription>
           </DialogHeader>
 
           <DialogBody className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field id="reg-first" label="First name" required>
+              <Field id="reg-first" label={t("firstName")} required>
                 <Input
                   id="reg-first"
                   value={firstName}
@@ -467,7 +472,7 @@ function RegisterUserDialog({
                   required
                 />
               </Field>
-              <Field id="reg-last" label="Last name" required>
+              <Field id="reg-last" label={t("lastName")} required>
                 <Input
                   id="reg-last"
                   value={lastName}
@@ -480,9 +485,9 @@ function RegisterUserDialog({
 
             <Field
               id="reg-username"
-              label="Username"
+              label={t("username")}
               required
-              hint="Used at sign-in. Lowercase, no spaces."
+              hint={t("usernameHint")}
             >
               <Input
                 id="reg-username"
@@ -494,7 +499,7 @@ function RegisterUserDialog({
               />
             </Field>
 
-            <Field id="reg-email" label="Email" required>
+            <Field id="reg-email" label={t("email")} required>
               <Input
                 id="reg-email"
                 type="email"
@@ -505,7 +510,7 @@ function RegisterUserDialog({
               />
             </Field>
 
-            <Field id="reg-phone" label="Phone" hint="Optional contact number.">
+            <Field id="reg-phone" label={t("phone")} hint={t("phoneHint")}>
               <Input
                 id="reg-phone"
                 value={phoneNumber}
@@ -515,7 +520,7 @@ function RegisterUserDialog({
             </Field>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field id="reg-pwd" label="Password" required>
+              <Field id="reg-pwd" label={t("password")} required>
                 <Input
                   id="reg-pwd"
                   type="password"
@@ -527,9 +532,9 @@ function RegisterUserDialog({
               </Field>
               <Field
                 id="reg-pwd2"
-                label="Confirm"
+                label={t("confirm")}
                 required
-                hint={passwordMismatch ? "Passwords don't match." : undefined}
+                hint={passwordMismatch ? t("mismatch") : undefined}
               >
                 <Input
                   id="reg-pwd2"
@@ -551,7 +556,7 @@ function RegisterUserDialog({
                 variant="outline"
                 disabled={mutation.isPending}
               >
-                Cancel
+                {t("cancel")}
               </Button>
             </DialogClose>
             <Button
@@ -560,7 +565,7 @@ function RegisterUserDialog({
               className="gap-1.5"
             >
               <UserPlus className="h-4 w-4" />
-              {mutation.isPending ? "Registering…" : "Register user"}
+              {mutation.isPending ? t("registering") : t("register")}
             </Button>
           </DialogFooter>
         </form>

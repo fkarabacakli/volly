@@ -3,6 +3,9 @@ import type { Route } from "@playwright/test";
 import { mockJsonResponse } from "../helpers/api-mocks";
 import { installShellMocks, paged } from "../helpers/shell-mocks";
 import { seedAuthedSession, TEST_USER } from "../helpers/auth-seed";
+import { ENGLISH_UI } from "../helpers/language";
+
+test.use({ storageState: ENGLISH_UI });
 
 // ── Fixtures ─────────────────────────────────────────────────────────
 

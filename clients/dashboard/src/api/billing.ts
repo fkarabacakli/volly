@@ -1,3 +1,4 @@
+import { i18n } from "@/i18n";
 import { apiFetch, ApiRequestError } from "@/lib/api-client";
 import { env } from "@/env";
 import { tokenStore } from "@/auth/token-store";
@@ -174,4 +175,18 @@ export async function downloadInvoicePdf(id: string, invoiceNumber: string): Pro
   } finally {
     window.URL.revokeObjectURL(objectUrl);
   }
+}
+
+// ─── Localised status labels (billing namespace); unknown values pass through. ───
+const INVOICE_STATUSES = ["Draft", "Issued", "Paid", "Void"] as const;
+const SUBSCRIPTION_STATUSES = ["Active", "Suspended", "Cancelled"] as const;
+
+export function invoiceStatusLabel(status: InvoiceStatus): string {
+  const known = INVOICE_STATUSES.find((s) => s === status);
+  return known ? i18n.t(`billing:invoiceStatus.${known}`) : status;
+}
+
+export function subscriptionStatusLabel(status: SubscriptionStatus): string {
+  const known = SUBSCRIPTION_STATUSES.find((s) => s === status);
+  return known ? i18n.t(`billing:subscriptionStatus.${known}`) : status;
 }

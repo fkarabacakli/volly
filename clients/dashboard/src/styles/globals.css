@@ -38,21 +38,21 @@
   --neutral-950:  oklch(0.110 0  0);
   --neutral-1000: oklch(0.075 0  0);
 
-  /* Brand — confident rose (#f91942 at the 600 stop). 600 is the
+  /* Brand — industrial emerald (the Volly default). 600 is the
      workhorse; 500 is for dark mode. Override these eleven stops via
      an `accent-{id}` class on :root (defined further down) to swap the
-     entire brand palette. */
-  --brand-50:   oklch(0.972 0.022  13);
-  --brand-100:  oklch(0.945 0.045  13);
-  --brand-200:  oklch(0.895 0.090  13);
-  --brand-300:  oklch(0.825 0.145  13);
-  --brand-400:  oklch(0.720 0.195  13);
-  --brand-500:  oklch(0.640 0.225  13);
-  --brand-600:  oklch(0.575 0.232  13);
-  --brand-700:  oklch(0.495 0.215  13);
-  --brand-800:  oklch(0.410 0.180  13);
-  --brand-900:  oklch(0.330 0.140  13);
-  --brand-950:  oklch(0.235 0.095  13);
+     entire brand palette. Values mirror `.accent-emerald` below. */
+  --brand-50:   oklch(0.972 0.020 152);
+  --brand-100:  oklch(0.945 0.040 152);
+  --brand-200:  oklch(0.895 0.078 152);
+  --brand-300:  oklch(0.825 0.120 152);
+  --brand-400:  oklch(0.720 0.155 152);
+  --brand-500:  oklch(0.620 0.170 152);
+  --brand-600:  oklch(0.545 0.170 152);
+  --brand-700:  oklch(0.470 0.155 152);
+  --brand-800:  oklch(0.395 0.135 152);
+  --brand-900:  oklch(0.320 0.110 152);
+  --brand-950:  oklch(0.225 0.075 152);
 
   /* Saffron — secondary warm accent. Used sparingly for the second
      channel of warmth against rose (gradient endpoints, hero numerals,
@@ -141,15 +141,31 @@
   --surface-1-hover:            var(--neutral-100);
   --surface-2-hover:            var(--neutral-50);
 
-  /* ── Charts — laddered around the rose brand axis. Saffron is the
-     primary counter-hue (warm pair), with teal/emerald/violet rounding
-     out the harmonic ladder. ────────────────────────────────────────── */
-  --chart-1: var(--brand-500);                       /* rose */
-  --chart-2: var(--saffron-500);                     /* saffron */
-  --chart-3: oklch(0.700 0.135 195);                 /* teal */
-  --chart-4: oklch(0.660 0.180 320);                 /* violet */
-  --chart-5: oklch(0.665 0.155 162);                 /* emerald */
+  /* ── Charts — industrial telemetry ladder. Brand emerald leads, then
+     cold-chain blue (temperature), amber (thresholds / warnings),
+     violet and teal for extra series. Read at runtime by the ECharts
+     theme (components/charts/echarts-theme.ts) so charts re-tone with
+     the accent + light/dark switch. ─────────────────────────────────── */
+  --chart-1: var(--brand-500);                       /* brand (emerald) */
+  --chart-2: oklch(0.640 0.160 245);                 /* cold-chain blue */
+  --chart-3: oklch(0.760 0.150  76);                 /* amber */
+  --chart-4: oklch(0.620 0.180 300);                 /* violet */
+  --chart-5: oklch(0.700 0.120 195);                 /* teal */
   --chart-grid: oklch(0.895 0  0 / 0.6);
+
+  /* ── Facility map — the 2D plan surface (components/facility-map).
+     Floor is a notch off the card so the plan reads as a sheet; walls
+     are the darkest ink on the page; zones are a faint brand wash. ── */
+  --map-floor:     var(--neutral-50);
+  --map-grid:      oklch(0.900 0  0 / 0.7);
+  --map-wall:      var(--neutral-700);
+  --map-rack:      var(--neutral-200);
+  --map-rack-edge: var(--neutral-300);
+  --map-zone:      oklch(from var(--brand-500) l c h / 0.07);
+  --map-zone-edge: oklch(from var(--brand-500) l c h / 0.35);
+  --map-alert:     oklch(from var(--danger-600) l c h / 0.14);
+  --map-alert-edge: var(--danger-600);
+  --map-cone:      oklch(from var(--brand-500) l c h / 0.16);
 
   /* ── 4. SYSTEM ─────────────────────────────────────────────────────── */
   /* Display = Outfit (rounded geometric, headings + hero numerals).
@@ -209,11 +225,10 @@
    different hue, keeping the L/C ramp identical. Apply by toggling a
    single class on :root (e.g. `accent-violet`).
    Hue chosen per accent:
-     rose (default) → 13 · indigo → 268 · violet → 305 · sky → 232
-     emerald → 152 · amber → 76
-   Rose is the default in :root above so no `.accent-rose` is needed
-   unless an upstream selection persists. Indigo is an opt-in for
-   teams that prefer the cool Linear chassis.
+     rose → 13 · indigo → 268 · violet → 305 · sky → 232
+     emerald (default) → 152 · amber → 76
+   Emerald is the default in :root above so no `.accent-emerald` is
+   needed unless an upstream selection persists.
    ─────────────────────────────────────────────────────────────────────── */
 .accent-rose {
   --brand-50:   oklch(0.972 0.022  13);
@@ -347,11 +362,22 @@
   --surface-2-hover:            var(--neutral-850);
 
   --chart-1: var(--brand-400);
-  --chart-2: var(--saffron-400);
-  --chart-3: oklch(0.745 0.135 195);
-  --chart-4: oklch(0.705 0.180 320);
-  --chart-5: oklch(0.710 0.155 162);
+  --chart-2: oklch(0.700 0.150 245);
+  --chart-3: oklch(0.800 0.150  76);
+  --chart-4: oklch(0.690 0.180 300);
+  --chart-5: oklch(0.760 0.120 195);
   --chart-grid: oklch(0.260 0  0 / 0.6);
+
+  --map-floor:     var(--neutral-950);
+  --map-grid:      oklch(0.260 0  0 / 0.7);
+  --map-wall:      oklch(0.780 0  0);
+  --map-rack:      var(--neutral-800);
+  --map-rack-edge: oklch(0.420 0  0);
+  --map-zone:      oklch(from var(--brand-400) l c h / 0.08);
+  --map-zone-edge: oklch(from var(--brand-400) l c h / 0.40);
+  --map-alert:     oklch(from var(--danger-500) l c h / 0.20);
+  --map-alert-edge: var(--danger-500);
+  --map-cone:      oklch(from var(--brand-400) l c h / 0.18);
 
   --highlight-top: inset 0 1px 0 oklch(1 0 0 / 0.06);
 
@@ -415,6 +441,18 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-grid: var(--chart-grid);
+
+  --color-map-floor:      var(--map-floor);
+  --color-map-grid:       var(--map-grid);
+  --color-map-wall:       var(--map-wall);
+  --color-map-rack:       var(--map-rack);
+  --color-map-rack-edge:  var(--map-rack-edge);
+  --color-map-zone:       var(--map-zone);
+  --color-map-zone-edge:  var(--map-zone-edge);
+  --color-map-alert:      var(--map-alert);
+  --color-map-alert-edge: var(--map-alert-edge);
+  --color-map-cone:       var(--map-cone);
 
   --radius-sm:  var(--radius-sm);
   --radius-md:  var(--radius-md);

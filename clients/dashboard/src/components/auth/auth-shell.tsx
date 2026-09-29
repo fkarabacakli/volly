@@ -1,19 +1,22 @@
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { ShieldCheck } from "lucide-react";
+import { previewLayout } from "@/api/industrial";
+import { BrandLogo } from "@/components/brand-logo";
+import { FacilityMap } from "@/components/facility-map/facility-map";
+import { BRAND_NAME } from "@/lib/brand";
+import { formatPercent } from "@/lib/format";
 
 // ────────────────────────────────────────────────────────────────────────
-// AuthShell — calm centered-card chrome for unauthenticated pages
-// (forgot-password, reset-password, confirm-email). Mirrors login.tsx's
-// dentalOS vocabulary: atmospheric rose+saffron orbs, Outfit "fullstackhero"
-// brand lockup, warm-paper card with backdrop blur. No parallax, no
-// brackets, no graph paper, no dialog-script eyebrow.
+// AuthShell — split chrome for unauthenticated pages (login, forgot /
+// reset password, confirm email): the form on a calm canvas on the left,
+// and on wide screens a brand panel on the right that previews the live
+// facility map — the product's own visual language, not a stock photo.
 // ────────────────────────────────────────────────────────────────────────
 
 /**
- * Display headline — Outfit, semibold, calm tracking. Mirrors the
- * "Welcome back" line in login.tsx. `lead`/`accent`/`trail` compose
- * but the accent is now a flat foreground-strong colour rather than a
- * gradient sweep (the gradient read too "demo-y" against the new palette).
+ * Display headline. `lead`/`accent`/`trail` compose; the accent word takes
+ * the brand colour.
  */
 export function AuthHeadline({
   lead,
@@ -25,13 +28,15 @@ export function AuthHeadline({
   trail?: string;
 }) {
   return (
-    <h1 className="mb-1.5 font-display text-[22px] font-semibold tracking-tight text-[var(--color-foreground)]">
+    <h1 className="mb-1.5 font-display text-[24px] font-semibold tracking-tight text-[var(--color-foreground)]">
       {lead && <>{lead} </>}
       {accent && <span className="text-[var(--color-primary)]">{accent}</span>}
       {trail && <>{trail}</>}
     </h1>
   );
 }
+
+const UPTIME_PCT = 99.9;
 
 export function AuthShell({
   children,
@@ -42,65 +47,79 @@ export function AuthShell({
   /** Optional row beneath the card — e.g. "Back to sign in" link */
   footer?: ReactNode;
 }) {
+  const { t } = useTranslation(["auth", "common"]);
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--color-background)] px-5 py-8 sm:py-12">
-      {/* Atmospheric background — three rose/saffron blur orbs at
-          descending opacities. No parallax, no animation — calm. */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <div
-          className="absolute -top-[25%] -left-[15%] h-[70vw] w-[70vw] rounded-full blur-[140px]"
-          style={{ backgroundColor: "oklch(from var(--color-primary) l c h / 0.05)" }}
-        />
-        <div
-          className="absolute -bottom-[20%] -right-[10%] h-[55vw] w-[55vw] rounded-full blur-[120px]"
-          style={{ backgroundColor: "oklch(from var(--color-saffron) l c h / 0.07)" }}
-        />
-        <div
-          className="absolute top-[10%] right-[5%] h-[30vw] w-[30vw] rounded-full blur-[80px]"
-          style={{ backgroundColor: "oklch(from var(--color-primary) l c h / 0.025)" }}
-        />
+    <div className="grid min-h-screen bg-[var(--color-background)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      <div className="flex flex-col px-5 py-8 sm:px-10">
+        <div className="flex items-center gap-2.5">
+          <BrandLogo className="size-9" />
+          <div>
+            <p className="font-display text-[18px] font-bold leading-none tracking-tight">{BRAND_NAME}</p>
+            <p className="mt-1 text-[11px] font-medium text-[var(--color-muted-foreground)]">{t("common:brand.tagline")}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-1 items-center justify-center py-10">
+          <div className="w-full max-w-[400px] fsh-enter fsh-enter-1">
+            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-[0_1px_3px_oklch(0_0_0_/_0.04),0_12px_32px_-12px_oklch(0_0_0_/_0.12)]">
+              <div className="px-6 py-7 sm:px-8 sm:py-9">{children}</div>
+            </div>
+
+            {footer && (
+              <div className="mt-6 text-center text-[12.5px] text-[var(--color-muted-foreground)]">{footer}</div>
+            )}
+
+            <div className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-[var(--color-muted-foreground)]">
+              <ShieldCheck className="size-3" aria-hidden />
+              <span>{t("secureNote")}</span>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-[var(--color-muted-foreground)]">{t("common:brand.pillars")}</p>
       </div>
 
-      {/* Card column */}
-      <div className="relative z-10 w-full max-w-[420px] fsh-enter fsh-enter-1">
-        {/* Brand lockup — FSH logo + Outfit wordmark + .NET 10 caption */}
-        <div className="mb-8 flex flex-col items-center">
-          <div className="flex items-center gap-2.5">
-            <img
-              src="/logo-fullstackhero.png"
-              alt="fullstackhero"
-              className="size-9 object-contain"
-            />
-            <span className="font-display text-[26px] font-semibold tracking-tight text-[var(--color-foreground)]">
-              fullstack<span className="text-[var(--color-primary)]">hero</span>
-            </span>
-          </div>
-          <div className="mt-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[oklch(from_var(--color-muted-foreground)_l_c_h_/_0.7)]">
-            <span aria-hidden className="h-px w-6 bg-[var(--color-border)]" />
-            <span>.NET 10 Starter Kit</span>
-            <span aria-hidden className="h-px w-6 bg-[var(--color-border)]" />
-          </div>
-        </div>
+      <BrandPanel />
+    </div>
+  );
+}
 
-        {/* Form card — warm-paper with backdrop blur */}
-        <div className="rounded-xl border border-[var(--color-border)] bg-[oklch(from_var(--color-card)_l_c_h_/_0.85)] backdrop-blur-xl shadow-[0_1px_3px_oklch(0_0_0_/_0.04),0_8px_24px_oklch(0_0_0_/_0.06)]">
-          <div className="px-6 py-7 sm:px-8 sm:py-9">{children}</div>
-        </div>
+function BrandPanel() {
+  const { t } = useTranslation(["auth", "common"]);
+  const layout = useMemo(() => previewLayout(), []);
+  const sensors = layout.devices.filter((d) => d.kind === "sensor").length;
+  const cameras = layout.devices.filter((d) => d.kind === "camera").length;
 
-        {footer && (
-          <div className="mt-6 text-center text-[12.5px] text-[var(--color-muted-foreground)]">
-            {footer}
-          </div>
-        )}
-
-        <div className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-[var(--color-muted-foreground)]">
-          <ShieldCheck className="size-3" />
-          <span>Encrypted in transit · JWT-secured session</span>
-        </div>
-        <p className="mt-4 text-center text-[10px] font-medium uppercase tracking-wider text-[oklch(from_var(--color-muted-foreground)_l_c_h_/_0.5)]">
-          fullstackhero Administration
-        </p>
+  return (
+    <aside
+      aria-hidden
+      className="relative hidden overflow-hidden border-l border-[var(--color-border)] bg-[var(--color-primary-soft)] lg:flex lg:flex-col"
+    >
+      <div className="px-12 pt-14">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]">{t("heroEyebrow")}</p>
+        <h2 className="mt-3 max-w-[480px] font-display text-[30px] font-semibold leading-tight tracking-tight">
+          {t("heroTitle")}
+        </h2>
+        <p className="mt-3 max-w-[440px] text-[14px] leading-relaxed text-[var(--color-muted-foreground)]">{t("heroBody")}</p>
+        <dl className="mt-7 flex gap-8">
+          <Stat value={String(sensors)} label={t("heroStatSensors")} />
+          <Stat value={String(cameras)} label={t("heroStatCameras")} />
+          <Stat value={formatPercent(UPTIME_PCT, 1)} label={t("heroStatUptime")} />
+        </dl>
       </div>
+      <div className="relative mx-10 mb-10 mt-8 flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] p-2 shadow-lg">
+        <FacilityMap plan={layout.plan} devices={layout.devices} className="absolute inset-2" />
+      </div>
+    </aside>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <dt className="sr-only">{label}</dt>
+      <dd className="font-display text-[26px] font-semibold leading-none tracking-tight text-[var(--color-foreground)]">{value}</dd>
+      <dd className="mt-1 text-[12px] text-[var(--color-muted-foreground)]">{label}</dd>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/auth/use-auth";
+import { i18n } from "@/i18n";
 
 export function ProtectedRoute() {
   const { isAuthenticated, isInitializing } = useAuth();
@@ -15,7 +16,7 @@ export function ProtectedRoute() {
         role="status"
         aria-busy="true"
       >
-        <span className="sr-only">Restoring your session…</span>
+        <span className="sr-only">{i18n.t("misc:restoringSession")}</span>
         <span
           className="size-5 animate-spin rounded-full border-2 border-current border-t-transparent"
           aria-hidden

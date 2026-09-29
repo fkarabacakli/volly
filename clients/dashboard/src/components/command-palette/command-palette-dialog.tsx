@@ -1,16 +1,19 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Command } from "cmdk";
 import {
   Activity,
+  BarChart3,
   Boxes,
+  Cctv,
   Folder,
+  Globe,
   HeartPulse,
   KeyRound,
   LayoutDashboard,
-  LifeBuoy,
   LogOut,
-  MessageSquare,
+  MapPinned,
   Monitor,
   Moon,
   Package,
@@ -24,10 +27,11 @@ import {
   ShieldCheck,
   Sparkles,
   Sun,
-  Tag,
+  Thermometer,
   Users,
   UserRound,
 } from "lucide-react";
+import { LANGUAGES, setLanguage } from "@/i18n";
 import {
   Dialog,
   DialogContent,
@@ -36,8 +40,9 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/auth/use-auth";
 import { useTheme } from "@/components/theme/theme-provider";
-import { accents } from "@/components/theme/appearance-options";
+import { accents, accentText } from "@/components/theme/appearance-options";
 import { ALL_TRASH_PERMISSIONS } from "@/lib/trash-permissions";
+import { BRAND_NAME } from "@/lib/brand";
 import { cn } from "@/lib/cn";
 
 /**
@@ -79,6 +84,7 @@ export function CommandPaletteDialog({
   open: boolean;
   onOpenChange: (next: boolean) => void;
 }) {
+  const { t } = useTranslation(["palette", "nav", "shell", "common"]);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { setMode, setAccent } = useTheme();
@@ -101,333 +107,81 @@ export function CommandPaletteDialog({
     };
     const allGroups: ActionGroup[] = [
       {
-        heading: "Navigate",
+        heading: t("groupNavigate"),
         items: [
-          {
-            id: "nav-overview",
-            label: "Overview",
-            hint: "Tenant telemetry & usage",
-            Icon: LayoutDashboard,
-            keywords: ["home", "dashboard"],
-            perform: go("/"),
-          },
-          {
-            id: "nav-activity",
-            label: "Live activity",
-            hint: "Real-time event stream",
-            Icon: Activity,
-            keywords: ["events", "sse", "log"],
-            perform: go("/activity"),
-          },
-          {
-            id: "nav-chat",
-            label: "Chat",
-            hint: "Channels & direct messages",
-            Icon: MessageSquare,
-            keywords: ["messages", "dm", "channel", "conversation"],
-            perform: go("/chat"),
-            perm: "Permissions.Chat.Channels.View",
-          },
-          {
-            id: "nav-files",
-            label: "Files",
-            hint: "My uploaded assets",
-            Icon: Folder,
-            keywords: ["storage", "uploads", "documents"],
-            perform: go("/files"),
-            perm: "Permissions.Files.Upload",
-          },
-          {
-            id: "nav-users",
-            label: "Users",
-            hint: "Identity directory",
-            Icon: Users,
-            keywords: ["identity", "people", "members", "team"],
-            perform: go("/identity/users"),
-            perm: "Permissions.Users.Update",
-          },
-          {
-            id: "nav-roles",
-            label: "Roles",
-            hint: "Permissions & role assignment",
-            Icon: ShieldCheck,
-            keywords: ["identity", "permissions", "rbac"],
-            perform: go("/identity/roles"),
-            perm: "Permissions.Roles.Update",
-          },
-          {
-            id: "nav-groups",
-            label: "Groups",
-            hint: "Org groups & membership",
-            Icon: Users,
-            keywords: ["identity", "teams", "org"],
-            perform: go("/identity/groups"),
-            perm: "Permissions.Groups.Update",
-          },
-          {
-            id: "nav-products",
-            label: "Products",
-            hint: "Catalog inventory",
-            Icon: Package,
-            keywords: ["catalog", "sku", "inventory", "stock"],
-            perform: go("/catalog/products"),
-            perm: "Permissions.Catalog.Products.View",
-          },
-          {
-            id: "nav-brands",
-            label: "Brands",
-            hint: "Catalog brands",
-            Icon: Tag,
-            keywords: ["catalog"],
-            perform: go("/catalog/brands"),
-            perm: "Permissions.Catalog.Brands.View",
-          },
-          {
-            id: "nav-categories",
-            label: "Categories",
-            hint: "Catalog categories",
-            Icon: Boxes,
-            keywords: ["catalog"],
-            perform: go("/catalog/categories"),
-            perm: "Permissions.Catalog.Categories.View",
-          },
-          {
-            id: "nav-tickets",
-            label: "Tickets",
-            hint: "Support requests",
-            Icon: LifeBuoy,
-            keywords: ["support", "issues", "helpdesk"],
-            perform: go("/tickets"),
-            perm: "Permissions.Tickets.View",
-          },
-          {
-            id: "nav-invoices",
-            label: "Invoices",
-            hint: "Billing history",
-            Icon: Receipt,
-            keywords: ["billing", "payment"],
-            perform: go("/invoices"),
-            perm: "Permissions.Billing.View",
-          },
-          {
-            id: "nav-health",
-            label: "Health",
-            hint: "Readiness probe & dependencies",
-            Icon: HeartPulse,
-            keywords: ["status", "uptime", "system", "ready", "redis", "postgres"],
-            perform: go("/system/health"),
-          },
-          {
-            id: "nav-audits",
-            label: "Audit trail",
-            hint: "Activity, security, entity-change events",
-            Icon: ScrollText,
-            keywords: ["audit", "log", "compliance", "security", "trace", "correlation"],
-            perform: go("/system/audits"),
-            perm: "Permissions.AuditTrails.View",
-          },
-          {
-            id: "nav-trash",
-            label: "Trash",
-            hint: "Soft-deleted records",
-            Icon: ScrollText,
-            keywords: ["recycle", "deleted", "restore"],
-            perform: go("/system/trash"),
-            anyPerm: ALL_TRASH_PERMISSIONS,
-          },
-          {
-            id: "nav-sessions",
-            label: "Sessions",
-            hint: "Active user sessions",
-            Icon: Shield,
-            keywords: ["devices", "logins"],
-            perform: go("/system/sessions"),
-            perm: "Permissions.Sessions.ViewAll",
-          },
-          {
-            id: "nav-settings",
-            label: "Settings",
-            Icon: SettingsIcon,
-            keywords: ["preferences", "config"],
-            perform: go("/settings"),
-          },
+          { id: "nav-overview", label: t("nav:overview"), hint: t("overviewHint"), Icon: LayoutDashboard, keywords: ["home", "dashboard", "genel"], perform: go("/") },
+          { id: "nav-monitoring", label: t("nav:monitoring"), hint: t("monitoringHint"), Icon: MapPinned, keywords: ["map", "harita", "live", "canlı"], perform: go("/monitoring") },
+          { id: "nav-inventory", label: t("nav:inventory"), hint: t("inventoryHint"), Icon: Boxes, keywords: ["stock", "stok", "rack", "raf"], perform: go("/inventory") },
+          { id: "nav-cameras", label: t("nav:cameras"), hint: t("camerasHint"), Icon: Cctv, keywords: ["camera", "kamera", "ai", "alert", "uyarı"], perform: go("/cameras") },
+          { id: "nav-sensors", label: t("nav:sensors"), hint: t("sensorsHint"), Icon: Thermometer, keywords: ["iot", "temperature", "sıcaklık", "nem"], perform: go("/sensors") },
+          { id: "nav-reports", label: t("nav:reports"), hint: t("reportsHint"), Icon: BarChart3, keywords: ["report", "rapor", "compare", "karşılaştır"], perform: go("/reports") },
+          { id: "nav-activity", label: t("nav:liveEvents"), hint: t("liveEventsHint"), Icon: Activity, keywords: ["events", "sse", "log"], perform: go("/activity") },
+          { id: "nav-files", label: t("nav:files"), hint: t("filesHint"), Icon: Folder, keywords: ["storage", "uploads", "documents"], perform: go("/files"), perm: "Permissions.Files.Upload" },
+          { id: "nav-users", label: t("nav:users"), hint: t("usersHint"), Icon: Users, keywords: ["identity", "people", "members"], perform: go("/identity/users"), perm: "Permissions.Users.Update" },
+          { id: "nav-roles", label: t("nav:roles"), hint: t("rolesHint"), Icon: ShieldCheck, keywords: ["identity", "permissions", "rbac"], perform: go("/identity/roles"), perm: "Permissions.Roles.Update" },
+          { id: "nav-groups", label: t("nav:groups"), hint: t("groupsHint"), Icon: Users, keywords: ["identity", "teams", "org"], perform: go("/identity/groups"), perm: "Permissions.Groups.Update" },
+          { id: "nav-invoices", label: t("nav:invoices"), hint: t("invoicesHint"), Icon: Receipt, keywords: ["billing", "payment"], perform: go("/invoices"), perm: "Permissions.Billing.View" },
+          { id: "nav-health", label: t("nav:health"), hint: t("healthHint"), Icon: HeartPulse, keywords: ["status", "uptime", "system"], perform: go("/system/health") },
+          { id: "nav-audits", label: t("nav:audits"), hint: t("auditsHint"), Icon: ScrollText, keywords: ["audit", "log", "security"], perform: go("/system/audits"), perm: "Permissions.AuditTrails.View" },
+          { id: "nav-trash", label: t("nav:trash"), hint: t("trashHint"), Icon: Package, keywords: ["recycle", "deleted", "restore"], perform: go("/system/trash"), anyPerm: ALL_TRASH_PERMISSIONS },
+          { id: "nav-sessions", label: t("nav:sessions"), hint: t("sessionsHint"), Icon: Shield, keywords: ["devices", "logins"], perform: go("/system/sessions"), perm: "Permissions.Sessions.ViewAll" },
+          { id: "nav-settings", label: t("nav:settings"), Icon: SettingsIcon, keywords: ["preferences", "config"], perform: go("/settings") },
         ],
       },
       {
-        heading: "Create",
+        heading: t("groupCreate"),
         items: [
-          {
-            id: "create-user",
-            label: "Create user",
-            hint: "Register a new account",
-            Icon: Plus,
-            keywords: ["new", "invite", "register", "identity"],
-            perform: go("/identity/users?action=create"),
-            perm: "Permissions.Users.Create",
-          },
-          {
-            id: "create-role",
-            label: "Create role",
-            hint: "Define a new permission set",
-            Icon: Plus,
-            keywords: ["new", "permissions", "rbac"],
-            perform: go("/identity/roles?action=create"),
-            perm: "Permissions.Roles.Create",
-          },
-          {
-            id: "create-group",
-            label: "Create group",
-            hint: "Organize members",
-            Icon: Plus,
-            keywords: ["new", "team", "org"],
-            perform: go("/identity/groups?action=create"),
-            perm: "Permissions.Groups.Create",
-          },
-          {
-            id: "create-product",
-            label: "Create product",
-            hint: "Add to catalog",
-            Icon: Plus,
-            keywords: ["new", "catalog", "sku"],
-            perform: go("/catalog/products?action=create"),
-            perm: "Permissions.Catalog.Products.Create",
-          },
-          {
-            id: "create-brand",
-            label: "Create brand",
-            hint: "Add a catalog brand",
-            Icon: Plus,
-            keywords: ["new", "catalog"],
-            perform: go("/catalog/brands?action=create"),
-            perm: "Permissions.Catalog.Brands.Create",
-          },
-          {
-            id: "create-category",
-            label: "Create category",
-            hint: "Add a catalog category",
-            Icon: Plus,
-            keywords: ["new", "catalog"],
-            perform: go("/catalog/categories?action=create"),
-            perm: "Permissions.Catalog.Categories.Create",
-          },
-          {
-            id: "create-ticket",
-            label: "Create ticket",
-            hint: "File a support request",
-            Icon: Plus,
-            keywords: ["new", "support", "issue"],
-            perform: go("/tickets?action=create"),
-            perm: "Permissions.Tickets.Create",
-          },
-          {
-            id: "create-channel",
-            label: "Create chat channel",
-            hint: "Start a new conversation space",
-            Icon: Plus,
-            keywords: ["new", "chat", "channel"],
-            perform: go("/chat?action=create-channel"),
-            perm: "Permissions.Chat.Channels.Create",
-          },
-          {
-            id: "create-file",
-            label: "Upload file",
-            hint: "Add to your storage",
-            Icon: Plus,
-            keywords: ["new", "upload", "attach"],
-            perform: go("/files?action=upload"),
-            perm: "Permissions.Files.Upload",
-          },
+          { id: "create-user", label: t("createUser"), hint: t("createUserHint"), Icon: Plus, keywords: ["new", "invite", "identity"], perform: go("/identity/users?action=create"), perm: "Permissions.Users.Create" },
+          { id: "create-role", label: t("createRole"), hint: t("createRoleHint"), Icon: Plus, keywords: ["new", "permissions"], perform: go("/identity/roles?action=create"), perm: "Permissions.Roles.Create" },
+          { id: "create-group", label: t("createGroup"), hint: t("createGroupHint"), Icon: Plus, keywords: ["new", "team"], perform: go("/identity/groups?action=create"), perm: "Permissions.Groups.Create" },
+          { id: "create-file", label: t("uploadFile"), hint: t("uploadFileHint"), Icon: Plus, keywords: ["new", "upload", "attach"], perform: go("/files?action=upload"), perm: "Permissions.Files.Upload" },
         ],
       },
       {
-        heading: "Account",
+        heading: t("groupAccount"),
         items: [
-          {
-            id: "acc-profile",
-            label: "Profile",
-            hint: "Name, email, contact",
-            Icon: UserRound,
-            perform: go("/settings/profile"),
-          },
-          {
-            id: "acc-security",
-            label: "Security",
-            hint: "Password, 2FA, sessions",
-            Icon: Shield,
-            keywords: ["password", "2fa", "sessions"],
-            perform: go("/settings/security"),
-          },
-          {
-            id: "acc-keys",
-            label: "API keys",
-            hint: "Generate & rotate",
-            Icon: KeyRound,
-            keywords: ["token", "credentials"],
-            perform: go("/settings/api-keys"),
-          },
-          {
-            id: "acc-notifications",
-            label: "Notifications",
-            hint: "Email preferences",
-            Icon: Sparkles,
-            perform: go("/settings/notifications"),
-          },
-          {
-            id: "acc-appearance",
-            label: "Appearance",
-            hint: "Theme, accent, font, density",
-            Icon: Palette,
-            keywords: ["theme", "font", "density", "dark", "light"],
-            perform: go("/settings/appearance"),
-          },
+          { id: "acc-profile", label: t("shell:profile"), hint: t("profileHint"), Icon: UserRound, perform: go("/settings/profile") },
+          { id: "acc-security", label: t("security"), hint: t("securityHint"), Icon: Shield, keywords: ["password", "2fa"], perform: go("/settings/security") },
+          { id: "acc-keys", label: t("shell:apiKeys"), hint: t("apiKeysHint"), Icon: KeyRound, keywords: ["token", "credentials"], perform: go("/settings/api-keys") },
+          { id: "acc-notifications", label: t("notifications"), hint: t("notificationsHint"), Icon: Sparkles, perform: go("/settings/notifications") },
+          { id: "acc-appearance", label: t("appearance"), hint: t("appearanceHint"), Icon: Palette, keywords: ["theme", "font", "dark", "light"], perform: go("/settings/appearance") },
         ],
       },
       {
-        heading: "Theme",
+        heading: t("groupTheme"),
         items: [
-          {
-            id: "theme-light",
-            label: "Switch to light",
-            Icon: Sun,
-            keywords: ["bright", "day"],
-            perform: () => setMode("light"),
-          },
-          {
-            id: "theme-dark",
-            label: "Switch to dark",
-            Icon: Moon,
-            keywords: ["night", "oled"],
-            perform: () => setMode("dark"),
-          },
-          {
-            id: "theme-system",
-            label: "Follow system theme",
-            Icon: Monitor,
-            keywords: ["auto"],
-            perform: () => setMode("system"),
-          },
+          { id: "theme-light", label: t("switchLight"), Icon: Sun, keywords: ["bright", "day"], perform: () => setMode("light") },
+          { id: "theme-dark", label: t("switchDark"), Icon: Moon, keywords: ["night"], perform: () => setMode("dark") },
+          { id: "theme-system", label: t("followSystem"), Icon: Monitor, keywords: ["auto"], perform: () => setMode("system") },
+          ...LANGUAGES.map((lng) => ({
+            id: `lang-${lng}`,
+            label: t("switchLanguage", { name: t(`common:language.${lng}`) }),
+            Icon: Globe,
+            keywords: ["language", "dil", lng],
+            perform: () => setLanguage(lng),
+          })),
         ],
       },
       {
-        heading: "Accent",
+        heading: t("groupAccent"),
         items: accents.map((a) => ({
           id: `accent-${a.id}`,
-          label: `Set accent: ${a.label}`,
-          hint: a.description,
+          label: t("setAccent", { name: accentText(a).label }),
+          hint: accentText(a).description,
           Icon: Palette,
           keywords: ["color", "brand", a.id],
           perform: () => setAccent(a.id),
         })),
       },
       {
-        heading: "Session",
+        heading: t("groupSession"),
         items: [
           {
             id: "sess-logout",
-            label: "Sign out",
-            hint: "End this session",
+            label: t("shell:signOut"),
+            hint: t("signOutHint"),
             Icon: LogOut,
-            keywords: ["logout", "exit", "quit"],
+            keywords: ["logout", "exit", "çıkış"],
             perform: () => {
               close();
               logout();
@@ -441,7 +195,7 @@ export function CommandPaletteDialog({
     return allGroups
       .map((g) => ({ ...g, items: g.items.filter(visible) }))
       .filter((g) => g.items.length > 0);
-  }, [navigate, onOpenChange, setMode, setAccent, logout, permissions]);
+  }, [navigate, onOpenChange, setMode, setAccent, logout, permissions, t]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -451,10 +205,8 @@ export function CommandPaletteDialog({
           "bg-[var(--color-popover)]",
         )}
       >
-        <DialogTitle className="sr-only">Command palette</DialogTitle>
-        <DialogDescription className="sr-only">
-          Search across pages, account actions, theme and accent. Use arrow keys to navigate; Enter to select.
-        </DialogDescription>
+        <DialogTitle className="sr-only">{t("title")}</DialogTitle>
+        <DialogDescription className="sr-only">{t("description")}</DialogDescription>
 
         <Command
           loop
@@ -465,8 +217,8 @@ export function CommandPaletteDialog({
           <div className="flex items-center gap-2.5 border-b border-border px-4 py-3">
             <Search className="h-[18px] w-[18px] shrink-0 text-[oklch(from_var(--color-muted-foreground)_l_c_h_/_0.5)]" aria-hidden />
             <Command.Input
-              placeholder="Type a command or search…"
-              aria-label="Search commands"
+              placeholder={t("placeholder")}
+              aria-label={t("searchLabel")}
               className={cn(
                 "h-7 flex-1 bg-transparent text-[14px] tracking-tight placeholder:text-[var(--color-muted-foreground)]",
                 "focus:outline-none focus-visible:outline-none focus-visible:shadow-none",
@@ -481,10 +233,8 @@ export function CommandPaletteDialog({
           {/* Results */}
           <Command.List className="max-h-[420px] overflow-y-auto px-2 py-2">
             <Command.Empty className="px-4 py-12 text-center">
-              <p className="text-sm font-medium tracking-tight">No matches</p>
-              <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
-                Try a different keyword — page name, entity, theme, accent, or sign-out.
-              </p>
+              <p className="text-sm font-medium tracking-tight">{t("emptyTitle")}</p>
+              <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">{t("emptyHint")}</p>
             </Command.Empty>
 
             {groups.map((group) => (
@@ -512,16 +262,14 @@ export function CommandPaletteDialog({
               <span className="flex items-center gap-1">
                 <kbd className="rounded border border-border bg-[var(--color-muted)] px-1 py-px text-[9px]">↑</kbd>
                 <kbd className="rounded border border-border bg-[var(--color-muted)] px-1 py-px text-[9px]">↓</kbd>
-                navigate
+                {t("navigate")}
               </span>
               <span className="flex items-center gap-1">
                 <kbd className="rounded border border-border bg-[var(--color-muted)] px-1 py-px text-[9px]">↵</kbd>
-                select
+                {t("select")}
               </span>
             </div>
-            <span className="text-[11px] text-[var(--color-muted-foreground)]">
-              v0.1
-            </span>
+            <span className="text-[11px] text-[var(--color-muted-foreground)]">{BRAND_NAME}</span>
           </div>
         </Command>
       </DialogContent>

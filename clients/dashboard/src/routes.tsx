@@ -1,4 +1,5 @@
 import { lazy, Suspense, type ComponentType } from "react";
+import { useTranslation } from "react-i18next";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AppShell } from "@/components/layout/app-shell";
 import { ProtectedRoute } from "@/auth/protected-route";
@@ -42,6 +43,11 @@ const ConfirmEmailPage = lazyNamed(
   "ConfirmEmailPage",
 );
 const OverviewPage = lazyNamed(() => import("@/pages/overview"), "OverviewPage");
+const MonitoringPage = lazyNamed(() => import("@/pages/industrial/monitoring"), "MonitoringPage");
+const InventoryPage = lazyNamed(() => import("@/pages/industrial/inventory"), "InventoryPage");
+const CamerasPage = lazyNamed(() => import("@/pages/industrial/cameras"), "CamerasPage");
+const SensorsPage = lazyNamed(() => import("@/pages/industrial/sensors"), "SensorsPage");
+const ReportsPage = lazyNamed(() => import("@/pages/industrial/reports"), "ReportsPage");
 const ActivityPage = lazyNamed(() => import("@/pages/activity"), "ActivityPage");
 const InvoicesPage = lazyNamed(() => import("@/pages/invoices"), "InvoicesPage");
 const InvoiceDetailPage = lazyNamed(
@@ -122,9 +128,10 @@ const ChatPage = lazyNamed(() => import("@/pages/chat/chat-page"), "ChatPage");
  * `.skeleton` shimmer so it feels like part of the same surface family.
  */
 function RouteFallback() {
+  const { t } = useTranslation("misc");
   return (
     <div className={cn("space-y-6 fsh-enter")} role="status" aria-busy="true">
-      <span className="sr-only">Loading…</span>
+      <span className="sr-only">{t("routeLoading")}</span>
       <div className="space-y-2">
         <Skeleton className="h-3 w-24" />
         <Skeleton className="h-8 w-64" />
@@ -199,6 +206,11 @@ export const router = createBrowserRouter([
         errorElement: <RouteError />,
         children: [
           { index: true, element: withSuspense(<OverviewPage />) },
+          { path: "monitoring", element: withSuspense(<MonitoringPage />) },
+          { path: "inventory", element: withSuspense(<InventoryPage />) },
+          { path: "cameras", element: withSuspense(<CamerasPage />) },
+          { path: "sensors", element: withSuspense(<SensorsPage />) },
+          { path: "reports", element: withSuspense(<ReportsPage />) },
           { path: "activity", element: withSuspense(<ActivityPage />) },
           { path: "subscription", element: withSuspense(<SubscriptionPage />) },
           { path: "wallet", element: withSuspense(<WalletPage />) },

@@ -1,32 +1,36 @@
+import { currentLocale, i18n } from "@/i18n";
 import { ApiRequestError } from "@/lib/api-client";
 
-const dateLong = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "2-digit",
-  year: "numeric",
-});
+// Formatters are built per call so they follow the active UI language.
+const dateLong = () =>
+  new Intl.DateTimeFormat(currentLocale(), {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
 
 export function formatDate(iso: string | null | undefined) {
   if (!iso) return "—";
-  return dateLong.format(new Date(iso));
+  return dateLong().format(new Date(iso));
 }
 
 // "APR 30 2026" — mono-caps tabular form for ledger/registry rows.
 export function formatDateMono(iso: string | null | undefined) {
   if (!iso) return "—";
-  return dateLong.format(new Date(iso)).toUpperCase().replace(",", "");
+  return dateLong().format(new Date(iso)).toLocaleUpperCase(currentLocale()).replace(",", "");
 }
 
 // "3:42 PM" — local wall-clock time. Intl renders in the browser's timezone.
-const timeShort = new Intl.DateTimeFormat("en-US", {
-  hour: "numeric",
-  minute: "2-digit",
-});
+const timeShort = () =>
+  new Intl.DateTimeFormat(currentLocale(), {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 
 // "APR 30 2026 · 3:42 PM" — date + local time for audit/detail panels.
 export function formatDateTimeMono(iso: string | null | undefined) {
   if (!iso) return "—";
-  return `${formatDateMono(iso)} · ${timeShort.format(new Date(iso))}`;
+  return `${formatDateMono(iso)} · ${timeShort().format(new Date(iso))}`;
 }
 
 // "3d ago", "2mo ago" — terse relative time for the secondary line.
@@ -35,17 +39,17 @@ export function formatRelative(iso: string | null | undefined) {
   const diffMs = Date.now() - new Date(iso).getTime();
   if (Number.isNaN(diffMs) || diffMs < 0) return "";
   const sec = Math.floor(diffMs / 1000);
-  if (sec < 60) return "just now";
+  if (sec < 60) return i18n.t("misc:relative.justNow");
   const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
+  if (min < 60) return i18n.t("misc:relative.minutes", { n: min });
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
+  if (hr < 24) return i18n.t("misc:relative.hours", { n: hr });
   const day = Math.floor(hr / 24);
-  if (day < 30) return `${day}d ago`;
+  if (day < 30) return i18n.t("misc:relative.days", { n: day });
   const mo = Math.floor(day / 30);
-  if (mo < 12) return `${mo}mo ago`;
+  if (mo < 12) return i18n.t("misc:relative.months", { n: mo });
   const yr = Math.floor(day / 365);
-  return `${yr}y ago`;
+  return i18n.t("misc:relative.years", { n: yr });
 }
 
 export function pad2(n: number) {
@@ -63,7 +67,7 @@ export function slugify(value: string) {
 
 export function formatMoney(amount: number, currency: string) {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(currentLocale(), {
       style: "currency",
       currency,
     }).format(amount);

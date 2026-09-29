@@ -2,6 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 import { mockJsonResponse } from "../helpers/api-mocks";
 import { seedAuthedSession, TEST_USER } from "../helpers/auth-seed";
 import { installShellMocks, paged } from "../helpers/shell-mocks";
+import { ENGLISH_UI } from "../helpers/language";
+
+test.use({ storageState: ENGLISH_UI });
 
 // Trash is tabbed. Default tab = Products → GET /api/v1/catalog/products/trash.
 // The trash row VM only reads { id, name, sku, deletedOnUtc, deletedBy } for

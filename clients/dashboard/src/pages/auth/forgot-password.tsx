@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Link, Navigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -30,6 +31,7 @@ import { env } from "@/env";
  * inbox" success state after a 2xx.
  */
 export function ForgotPasswordPage() {
+  const { t } = useTranslation("authFlow");
   const { isAuthenticated } = useAuth();
   const [email, setEmail] = useState("");
   const [tenant, setTenant] = useState(env.defaultTenant);
@@ -65,12 +67,12 @@ export function ForgotPasswordPage() {
     <AuthShell
       footer={
         <span>
-          Remembered it?{" "}
+          {t("forgot.remembered")}{" "}
           <Link
             to="/login"
             className="text-[var(--color-foreground)] underline-offset-4 hover:underline"
           >
-            Sign in
+            {t("signIn")}
           </Link>
         </span>
       }
@@ -86,23 +88,24 @@ export function ForgotPasswordPage() {
             </span>
           </div>
           <div>
-            <AuthHeadline lead="Check your" accent="inbox" />
+            <AuthHeadline lead={t("forgot.checkLead")} accent={t("forgot.checkAccent")} />
             <p className="text-[13px] leading-relaxed text-[var(--color-muted-foreground)]">
-              If an account exists for{" "}
-              <span className="text-[var(--color-foreground)]">{email}</span> in
-              tenant{" "}
-              <span className="text-[var(--color-foreground)]">{tenant}</span>,
-              a one-time reset link is on its way. The link expires in 30 minutes.
+              <Trans
+                t={t}
+                i18nKey="forgot.sentBody"
+                values={{ email, tenant }}
+                components={{ em: <span className="text-[var(--color-foreground)]" /> }}
+              />
             </p>
           </div>
           <ul className="space-y-1.5 text-left text-[12.5px] text-[var(--color-muted-foreground)]">
             <li className="flex items-start gap-2">
               <Check className="mt-0.5 size-3.5 shrink-0 text-[var(--color-success)]" />
-              Didn't get it? Wait a minute, then check spam.
+              {t("forgot.tipWait")}
             </li>
             <li className="flex items-start gap-2">
               <Check className="mt-0.5 size-3.5 shrink-0 text-[var(--color-success)]" />
-              Still nothing? Confirm the email + tenant and try again.
+              {t("forgot.tipRetry")}
             </li>
           </ul>
           <div className="flex items-center gap-2 pt-1">
@@ -114,11 +117,11 @@ export function ForgotPasswordPage() {
                 setError(null);
               }}
             >
-              Try a different address
+              {t("forgot.tryDifferent")}
             </Button>
             <Link to="/login" className="ml-auto">
               <Button type="button" variant="outline">
-                Back to sign in
+                {t("backToSignIn")}
               </Button>
             </Link>
           </div>
@@ -126,10 +129,8 @@ export function ForgotPasswordPage() {
       ) : (
         <>
           <div className="mb-6 sm:mb-8">
-            <AuthHeadline lead="Reset your" accent="password" />
-            <p className="text-[13px] text-[var(--color-muted-foreground)]">
-              Enter the email you sign in with. We'll send a one-time link.
-            </p>
+            <AuthHeadline lead={t("forgot.titleLead")} accent={t("forgot.titleAccent")} />
+            <p className="text-[13px] text-[var(--color-muted-foreground)]">{t("forgot.intro")}</p>
           </div>
 
           <form onSubmit={onSubmit} className="space-y-5" noValidate aria-describedby={error ? "forgot-error" : undefined}>
@@ -138,7 +139,7 @@ export function ForgotPasswordPage() {
                 htmlFor="reset-tenant"
                 className="block text-[11.5px] font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]"
               >
-                Tenant
+                {t("tenant")}
               </Label>
               <div className="relative">
                 <Building2 className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[oklch(from_var(--color-muted-foreground)_l_c_h_/_0.6)]" />
@@ -161,7 +162,7 @@ export function ForgotPasswordPage() {
                 htmlFor="reset-email"
                 className="block text-[11.5px] font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]"
               >
-                Email
+                {t("email")}
               </Label>
               <div className="relative">
                 <Mail className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[oklch(from_var(--color-muted-foreground)_l_c_h_/_0.6)]" />
@@ -206,11 +207,11 @@ export function ForgotPasswordPage() {
                 {mutation.isPending ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    <span>Sending link…</span>
+                    <span>{t("forgot.sending")}</span>
                   </>
                 ) : (
                   <>
-                    <span>Send reset link</span>
+                    <span>{t("forgot.send")}</span>
                     <ArrowRight className="size-[14px] opacity-60 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
                   </>
                 )}

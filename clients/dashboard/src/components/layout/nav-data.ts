@@ -1,30 +1,33 @@
 import {
   Activity,
-  CreditCard,
+  BarChart3,
+  Boxes,
+  Cctv,
   FolderOpen,
-  FolderTree,
   HeartPulse,
   LayoutDashboard,
-  MessageCircle,
-  Package,
+  MapPinned,
   Receipt,
+  CreditCard,
   ScrollText,
   Settings,
   ShieldCheck,
-  Tags,
-  Ticket,
+  Thermometer,
   Trash2,
   Users,
   UsersRound,
-  Wallet,
   Wifi,
 } from "lucide-react";
+import type { Messages } from "@/i18n/locales/tr";
 import { ALL_TRASH_PERMISSIONS } from "@/lib/trash-permissions";
+
+/** Keys of the `nav` i18n namespace — labels are translated at render time. */
+export type NavLabelKey = keyof Messages["nav"];
 
 export type NavSpec = {
   to: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  labelKey: NavLabelKey;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   /**
    * Permission required to see this item. Items without a `perm` are visible to
    * every authenticated tenant user; gated items are hidden when the current
@@ -43,86 +46,63 @@ export type NavSpec = {
 
 export type NavSection = {
   id: string;
-  caption: string;
+  captionKey: NavLabelKey;
   /** Section-level icon used as a fallback when the sidebar is
    *  collapsed and the section is rendered as a stack of item icons. */
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   items: NavSpec[];
 };
 
-// Top-level items live OUTSIDE any section. Overview opens the app;
-// Settings is account-scoped and lives at the very bottom.
+// Top-level items: the industrial product surface. They read the mock
+// industrial API today (no server permission yet), so they're ungated.
+// Chat, Catalog, Tickets and the WhatsApp wallet are starter-kit demo
+// modules — their routes still exist but they're intentionally not in
+// the nav or the command palette.
 export const topNavTop: NavSpec[] = [
-  { to: "/", label: "Overview", icon: LayoutDashboard },
-  // Each gate mirrors the permission the page's primary list endpoint enforces
-  // server-side (Chat → channels list, Files → /files/mine). Same convention
-  // as trash-permissions.ts: if the endpoint's permission changes, mirror it.
-  { to: "/chat", label: "Chat", icon: MessageCircle, perm: "Permissions.Chat.Channels.View" },
-  { to: "/files", label: "My Files", icon: FolderOpen, perm: "Permissions.Files.Upload" },
+  { to: "/", labelKey: "overview", icon: LayoutDashboard },
+  { to: "/monitoring", labelKey: "monitoring", icon: MapPinned },
+  { to: "/inventory", labelKey: "inventory", icon: Boxes },
+  { to: "/cameras", labelKey: "cameras", icon: Cctv },
+  { to: "/sensors", labelKey: "sensors", icon: Thermometer },
+  { to: "/reports", labelKey: "reports", icon: BarChart3 },
 ];
 
 export const topNavBottom: NavSpec[] = [
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/settings", labelKey: "settings", icon: Settings },
 ];
 
 // Section accordion. Single-select — only one section open at a time.
 export const sections: NavSection[] = [
   {
-    id: "operations",
-    caption: "Operations",
-    icon: Activity,
-    items: [
-      // Live activity is SSE-backed; the stream is auth-only (no permission), so no gate.
-      { to: "/activity", label: "Live activity", icon: Activity },
-      { to: "/subscription", label: "Subscription", icon: CreditCard, perm: "Permissions.Billing.View" },
-      { to: "/wallet", label: "WhatsApp wallet", icon: Wallet, perm: "Permissions.Billing.View" },
-      { to: "/invoices", label: "Invoices", icon: Receipt, perm: "Permissions.Billing.View" },
-    ],
-  },
-  {
-    id: "catalog",
-    caption: "Catalog",
-    icon: Package,
-    items: [
-      { to: "/catalog/products", label: "Products", icon: Package, perm: "Permissions.Catalog.Products.View" },
-      { to: "/catalog/brands", label: "Brands", icon: Tags, perm: "Permissions.Catalog.Brands.View" },
-      { to: "/catalog/categories", label: "Categories", icon: FolderTree, perm: "Permissions.Catalog.Categories.View" },
-    ],
-  },
-  {
-    id: "helpdesk",
-    caption: "Helpdesk",
-    icon: Ticket,
-    items: [
-      { to: "/tickets", label: "Tickets", icon: Ticket, perm: "Permissions.Tickets.View" },
-    ],
-  },
-  {
-    id: "identity",
-    caption: "Identity",
+    id: "management",
+    captionKey: "sectionManagement",
     icon: Users,
     items: [
       // Gate the identity-management pages on a manage permission (not View): View Users/Roles/Groups
-      // are IsBasic so every member holds them (the chat/user picker relies on Users.View), but only
-      // managers should see these admin pages. Basic lacks the *.Update perms, so the items hide for them.
-      { to: "/identity/users", label: "Users", icon: Users, perm: "Permissions.Users.Update" },
-      { to: "/identity/roles", label: "Roles", icon: ShieldCheck, perm: "Permissions.Roles.Update" },
-      { to: "/identity/groups", label: "Groups", icon: UsersRound, perm: "Permissions.Groups.Update" },
+      // are IsBasic so every member holds them, but only managers should see these admin pages.
+      { to: "/identity/users", labelKey: "users", icon: Users, perm: "Permissions.Users.Update" },
+      { to: "/identity/roles", labelKey: "roles", icon: ShieldCheck, perm: "Permissions.Roles.Update" },
+      { to: "/identity/groups", labelKey: "groups", icon: UsersRound, perm: "Permissions.Groups.Update" },
+      // Mirrors the permission /files/mine enforces server-side.
+      { to: "/files", labelKey: "files", icon: FolderOpen, perm: "Permissions.Files.Upload" },
     ],
   },
   {
     id: "system",
-    caption: "System",
+    captionKey: "sectionSystem",
     icon: HeartPulse,
     items: [
+      // Live activity is SSE-backed; the stream is auth-only (no permission), so no gate.
+      { to: "/activity", labelKey: "liveEvents", icon: Activity },
       // Health hits the anonymous /health/ready probe — visible to everyone.
-      { to: "/system/health", label: "Health", icon: HeartPulse },
-      { to: "/system/audits", label: "Audit trail", icon: ScrollText, perm: "Permissions.AuditTrails.View" },
-      { to: "/system/sessions", label: "Sessions", icon: Wifi, perm: "Permissions.Sessions.ViewAll" },
-      // Trash fronts five tabs, each gated on a different resource's restore /
-      // view-trash permission. Show the entry if the user can reach any tab; the
-      // page hides the individual tabs they can't (see trash-permissions.ts).
-      { to: "/system/trash", label: "Trash", icon: Trash2, anyPerm: ALL_TRASH_PERMISSIONS },
+      { to: "/system/health", labelKey: "health", icon: HeartPulse },
+      { to: "/system/audits", labelKey: "audits", icon: ScrollText, perm: "Permissions.AuditTrails.View" },
+      { to: "/system/sessions", labelKey: "sessions", icon: Wifi, perm: "Permissions.Sessions.ViewAll" },
+      // Trash fronts several tabs, each gated on a different resource's restore /
+      // view-trash permission. Show the entry if the user can reach any tab.
+      { to: "/system/trash", labelKey: "trash", icon: Trash2, anyPerm: ALL_TRASH_PERMISSIONS },
+      { to: "/subscription", labelKey: "subscription", icon: CreditCard, perm: "Permissions.Billing.View" },
+      { to: "/invoices", labelKey: "invoices", icon: Receipt, perm: "Permissions.Billing.View" },
     ],
   },
 ];

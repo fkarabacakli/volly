@@ -2,6 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 import { installShellMocks } from "../helpers/shell-mocks";
 import { mockJsonResponse, mockProblemDetails } from "../helpers/api-mocks";
 import { seedAuthedSession, TEST_USER } from "../helpers/auth-seed";
+import { ENGLISH_UI } from "../helpers/language";
+
+test.use({ storageState: ENGLISH_UI });
 
 // A full TenantThemeDto the GET /theme mock returns. Palette values are the
 // framework light/dark defaults; typography + layout are inert here (the

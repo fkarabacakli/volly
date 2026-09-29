@@ -2,6 +2,9 @@ import { expect, test } from "@playwright/test";
 import { mockJsonResponse } from "../helpers/api-mocks";
 import { installShellMocks, paged } from "../helpers/shell-mocks";
 import { seedAuthedSession, TEST_USER } from "../helpers/auth-seed";
+import { ENGLISH_UI } from "../helpers/language";
+
+test.use({ storageState: ENGLISH_UI });
 
 // ── Fixtures ─────────────────────────────────────────────────────────
 
@@ -206,7 +209,7 @@ test.describe("expiry banner", () => {
     await mockJsonResponse(page, "**/api/v1/tenants/me/status**", HEALTHY_STATUS);
     await page.goto("/");
     // Wait for the page to settle, then assert the bar never showed.
-    await expect(page.getByRole("heading", { name: /good (morning|afternoon|evening)/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Overview", level: 1 })).toBeVisible();
     await expect(page.getByText(/your subscription expire/i)).toHaveCount(0);
   });
 

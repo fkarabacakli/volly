@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import { App } from "@/App";
 import { installImpersonationFromHash } from "@/auth/impersonation-handoff";
 import { loadRuntimeConfig } from "@/env";
+// Side-effect import: initialises i18next (bundled TR/EN catalogs) before first render.
+import "@/i18n";
 import "@/styles/globals.css";
 
 // Runtime config must resolve before React mounts so env.apiBase reads

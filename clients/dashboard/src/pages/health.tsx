@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
@@ -27,6 +28,7 @@ import {
   type EntityStatusTone,
   type ToneIconTileTone,
 } from "@/components/list";
+import { currentLocale, i18n } from "@/i18n";
 import { cn } from "@/lib/cn";
 
 // ────────────────────────────────────────────────────────────────────────
@@ -64,20 +66,6 @@ const PILL_TONE: Record<Tone, EntityStatusTone> = {
   danger: "danger",
 };
 
-const HERO_COPY: Record<HealthStatus, { headline: string; subline: string }> = {
-  Healthy: {
-    headline: "All systems operational",
-    subline: "Every dependency is responding within tolerance.",
-  },
-  Degraded: {
-    headline: "Partial degradation",
-    subline: "One or more checks are reporting elevated latency or warnings.",
-  },
-  Unhealthy: {
-    headline: "Disruption detected",
-    subline: "At least one critical dependency is unreachable. Investigate the failing checks below.",
-  },
-};
 
 // ────────────────────────────────────────────────────────────────────────
 // Per-check icon registry — keyed on the well-known names registered
@@ -139,12 +127,12 @@ function splitLatency(ms: number): [string, string] {
 
 function formatRelative(iso: string, now: number = Date.now()): string {
   const delta = Math.max(0, Math.floor((now - Date.parse(iso)) / 1000));
-  if (delta < 5) return "just now";
-  if (delta < 60) return `${delta}s ago`;
+  if (delta < 5) return i18n.t("health:justNow");
+  if (delta < 60) return i18n.t("health:secondsAgo", { n: delta });
   const m = Math.floor(delta / 60);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return i18n.t("health:minutesAgo", { n: m });
   const h = Math.floor(m / 60);
-  return `${h}h ago`;
+  return i18n.t("health:hoursAgo", { n: h });
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -154,6 +142,7 @@ function formatRelative(iso: string, now: number = Date.now()): string {
 const POLL_INTERVAL_MS = 10_000;
 
 export function HealthPage() {
+  const { t } = useTranslation("health");
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   const query = useQuery({
@@ -191,8 +180,8 @@ export function HealthPage() {
   return (
     <div className="space-y-7 pb-12">
       <PageHero
-        eyebrow="System · Health"
-        title="Health"
+        eyebrow={t("eyebrow")}
+        title={t("title")}
         subtitle={
           <>
             Live readiness probe across every registered dependency. Polled every{" "}
@@ -212,7 +201,7 @@ export function HealthPage() {
               ) : (
                 <Play className="mr-1.5 h-3.5 w-3.5" />
               )}
-              {autoRefresh ? "Live" : "Paused"}
+              {autoRefresh ? t("live") : t("paused")}
             </Button>
             <Button
               variant="outline"
@@ -223,7 +212,7 @@ export function HealthPage() {
               <RefreshCw
                 className={cn("mr-1.5 h-3.5 w-3.5", query.isFetching && "animate-spin")}
               />
-              Refresh
+              {t("refresh")}
             </Button>
           </>
         }
@@ -246,10 +235,10 @@ export function HealthPage() {
       </section>
 
       {/* ── Dependencies list ───────────────────────────────────────────── */}
-      <section aria-label="Dependencies" className="fsh-enter fsh-enter-3">
+      <section aria-label={t("dependencies")} className="fsh-enter fsh-enter-3">
         <div className="mb-3 flex items-baseline justify-between gap-3">
           <h2 className="font-display text-[16px] font-semibold tracking-tight text-[var(--color-foreground)]">
-            Dependencies
+            {t("dependencies")}
           </h2>
           {snapshot && (
             <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-muted-foreground)]">
@@ -296,8 +285,12 @@ function HeroPanel({
   failing: number;
   total: number;
 }) {
+  const { t } = useTranslation("health");
   const tone = toneFor(snapshot.status);
-  const copy = HERO_COPY[snapshot.status];
+  const copy = {
+    headline: t(`hero.${snapshot.status}.headline`),
+    subline: t(`hero.${snapshot.status}.subline`),
+  };
   const Icon =
     snapshot.status === "Healthy"
       ? CheckCircle2
@@ -325,7 +318,7 @@ function HeroPanel({
             <ToneIconTile icon={Icon} tone={TILE_TONE[tone]} size="lg" />
             <div className="flex items-baseline gap-2">
               <EntityStatusBadge tone={PILL_TONE[tone]} withDot>
-                {snapshot.status}
+                {t(`status.${snapshot.status}`)}
               </EntityStatusBadge>
               <span className="font-mono text-[10.5px] font-medium uppercase tracking-wider text-[var(--color-muted-foreground)]">
                 HTTP {snapshot.httpStatus}
@@ -343,17 +336,17 @@ function HeroPanel({
 
           {/* Vitals row */}
           <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">
-            <Vital label="Checks" value={`${total - failing}/${total}`} hint="passing" />
+            <Vital label={t("checks")} value={`${total - failing}/${total}`} hint={t("passing")} />
             <Vital
-              label="Round-trip"
+              label={t("roundTrip")}
               value={formatLatency(snapshot.roundTripMs)}
-              hint="end-to-end"
+              hint={t("endToEnd")}
             />
-            <Vital label="Slowest" value={formatLatency(slowestMs)} hint="single check" />
+            <Vital label={t("slowest")} value={formatLatency(slowestMs)} hint={t("singleCheck")} />
             <Vital
-              label="Last poll"
+              label={t("lastPoll")}
               value={formatRelative(snapshot.fetchedAt)}
-              hint={new Date(snapshot.fetchedAt).toLocaleTimeString("en-US", {
+              hint={new Date(snapshot.fetchedAt).toLocaleTimeString(currentLocale(), {
                 hour12: false,
               })}
             />
@@ -365,7 +358,7 @@ function HeroPanel({
         <div className="lg:w-[176px]">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-[10.5px] font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">
-              Recent polls
+              {t("recentPolls")}
             </span>
             <Activity className="size-3 text-[var(--color-muted-foreground)]" aria-hidden />
           </div>
@@ -411,20 +404,21 @@ function Vital({
  * the strip so the ribbon has consistent width even on first paint.
  */
 function HistoryPips({ ticks }: { ticks: Tick[] }) {
+  const { t } = useTranslation("health");
   const filled: Array<Tick | null> = [
     ...Array(HISTORY_LIMIT - ticks.length).fill(null),
     ...ticks,
   ];
   return (
-    <div className="flex gap-[3px]" role="img" aria-label="Recent poll history">
+    <div className="flex gap-[3px]" role="img" aria-label={t("history")}>
       {filled.map((tick, i) => (
         <span
           key={i}
           className="h-6 flex-1 rounded-[2px] transition-colors"
           title={
             tick
-              ? `${tick.status} · ${new Date(tick.at).toLocaleTimeString()}`
-              : "no data"
+              ? `${t(`status.${tick.status}`)} · ${new Date(tick.at).toLocaleTimeString(currentLocale())}`
+              : t("noData")
           }
           style={{
             backgroundColor: tick
@@ -482,6 +476,7 @@ function DependencyRow({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const { t } = useTranslation("health");
   const tone = toneFor(entry.status);
   const Icon = iconForCheck(entry.name);
   const toneColor = TONE_VAR[tone];
@@ -553,7 +548,7 @@ function DependencyRow({
             </p>
           ) : (
             <p className="mt-0.5 truncate text-[11.5px] italic text-[oklch(from_var(--color-muted-foreground)_l_c_h_/_0.7)]">
-              No description registered.
+              {t("noDescription")}
             </p>
           )}
         </div>
@@ -573,7 +568,7 @@ function DependencyRow({
           className="hidden shrink-0 text-[10.5px] font-semibold uppercase tracking-wider sm:inline"
           style={{ color: toneColor }}
         >
-          {entry.status}
+          {t(`status.${entry.status}`)}
         </span>
 
         {/* Chevron */}
@@ -593,7 +588,7 @@ function DependencyRow({
             <div>
               <div className="flex items-baseline justify-between gap-3">
                 <span className="text-[10.5px] font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">
-                  Latency budget
+                  {t("latencyBudget")}
                 </span>
                 <span className="font-mono text-[11px] tabular-nums text-[var(--color-muted-foreground)]">
                   {formatLatency(entry.durationMs)} / 500 ms
@@ -609,19 +604,18 @@ function DependencyRow({
                 />
               </div>
               <p className="mt-2 text-[11px] leading-relaxed text-[var(--color-muted-foreground)]">
-                Scaled against a soft 500 ms readiness budget. Bars in the upper
-                third are early-warning territory.
+                {t("budgetHint")}
               </p>
             </div>
 
             {/* Detail key/value table */}
             <div>
               <span className="text-[10.5px] font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">
-                Detail
+                {t("detail")}
               </span>
               {detailEntries.length === 0 ? (
                 <p className="mt-2 text-[12px] italic text-[oklch(from_var(--color-muted-foreground)_l_c_h_/_0.7)]">
-                  No additional details reported.
+                  {t("noDetail")}
                 </p>
               ) : (
                 <dl className="mt-2 divide-y divide-[oklch(from_var(--color-border)_l_c_h_/_0.5)] rounded-lg border border-[var(--color-border)] bg-[var(--color-card)]">
@@ -709,6 +703,7 @@ function ChecksSkeleton() {
 }
 
 function ErrorPanel({ message }: { message?: string }) {
+  const { t } = useTranslation("health");
   return (
     <div
       role="alert"
@@ -721,11 +716,11 @@ function ErrorPanel({ message }: { message?: string }) {
       <ToneIconTile icon={CircleAlert} tone="destructive" size="md" />
       <div className="min-w-0 flex-1">
         <p className="font-display text-[14px] font-semibold tracking-tight text-[var(--color-destructive)]">
-          Health endpoint unreachable
+          {t("unreachable")}
         </p>
         <p className="mt-1 text-[12.5px] leading-relaxed text-[var(--color-muted-foreground)]">
           {message ??
-            "The browser couldn't reach /health/ready. The API may be down, or a network policy is blocking the request."}
+            t("unreachableBody")}
         </p>
       </div>
     </div>
@@ -733,18 +728,19 @@ function ErrorPanel({ message }: { message?: string }) {
 }
 
 function EmptyChecks() {
+  const { t } = useTranslation("health");
   return (
     <div className="flex flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-card)] px-5 py-12 text-center">
       <ToneIconTile icon={ShieldCheck} tone="muted" size="lg" className="rounded-full" />
       <p className="font-display text-[14px] font-semibold tracking-tight text-[var(--color-foreground)]">
-        No checks registered
+        {t("noChecks")}
       </p>
       <p className="max-w-sm text-[11.5px] leading-relaxed text-[var(--color-muted-foreground)]">
-        Modules can register dependency checks via{" "}
+        {t("noChecksLead")}{" "}
         <code className="rounded bg-[var(--color-muted)] px-1.5 py-0.5 font-mono text-[10.5px] text-[var(--color-foreground)]">
           AddHealthChecks()
         </code>
-        . None are reporting yet.
+        {t("noChecksTrail")}
       </p>
     </div>
   );

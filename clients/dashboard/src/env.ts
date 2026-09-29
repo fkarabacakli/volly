@@ -28,6 +28,21 @@ function positiveOr(value: unknown, fallback: number): number {
 
 let cached: RuntimeConfig | null = null;
 
+const REACHABILITY_TIMEOUT_MS = 2_000;
+
+/** Any HTTP response (even 5xx) proves the origin is reachable; only a network/TLS error doesn't. */
+async function isReachable(base: string): Promise<boolean> {
+  try {
+    await fetch(`${base}/health/live`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(REACHABILITY_TIMEOUT_MS),
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function loadRuntimeConfig(): Promise<void> {
   if (cached !== null) return;
   const res = await fetch("/config.json", { cache: "no-store" });
@@ -35,8 +50,19 @@ export async function loadRuntimeConfig(): Promise<void> {
     throw new Error(`Failed to load /config.json: ${res.status} ${res.statusText}`);
   }
   const cfg = (await res.json()) as Partial<RuntimeConfig>;
+  let apiBase = (cfg.apiBase ?? "").replace(/\/$/, "");
+  // Dev only: the Vite plugin points apiBase straight at https://localhost:7030 (see
+  // vite.config.ts). When the browser can't reach it — typically because the ASP.NET dev
+  // certificate isn't trusted (the default on Linux) — every call fails with "Failed to fetch",
+  // sign-in included. Fall back to the same-origin Vite proxy, which accepts the self-signed cert.
+  if (import.meta.env.DEV && /^https?:\/\//.test(apiBase) && !(await isReachable(apiBase))) {
+    console.warn(
+      `[env] ${apiBase} is unreachable from the browser (untrusted dev certificate?); using the Vite proxy instead.`,
+    );
+    apiBase = "";
+  }
   cached = {
-    apiBase: (cfg.apiBase ?? "").replace(/\/$/, ""),
+    apiBase,
     defaultTenant: cfg.defaultTenant ?? "root",
     demoMode: cfg.demoMode ?? false,
     inactivityIdleMs: positiveOr(cfg.inactivityIdleMs, DEFAULT_INACTIVITY_IDLE_MS),

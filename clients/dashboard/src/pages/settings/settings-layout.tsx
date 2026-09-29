@@ -11,13 +11,15 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { EntityPageHeader } from "@/components/list";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/auth/use-auth";
 import { cn } from "@/lib/cn";
 
+type TabId = "profile" | "security" | "appearance" | "branding" | "notifications" | "apiKeys";
+
 type Tab = {
+  id: TabId;
   to: string;
-  label: string;
-  hint: string;
   icon: LucideIcon;
   /**
    * Permission required to see this tab. Tabs without a `perm` are visible to
@@ -29,15 +31,15 @@ type Tab = {
 };
 
 const TABS: Tab[] = [
-  { to: "/settings/profile", label: "Profile", hint: "Your identity across the tenant", icon: UserRound },
-  { to: "/settings/security", label: "Security", hint: "Password and active sessions", icon: Shield },
-  { to: "/settings/appearance", label: "Appearance", hint: "Theme and visual preferences", icon: Palette },
+  { id: "profile", to: "/settings/profile", icon: UserRound },
+  { id: "security", to: "/settings/security", icon: Shield },
+  { id: "appearance", to: "/settings/appearance", icon: Palette },
   // Tenant-wide branding (palette + logos served on sign-in), distinct from the
   // per-user Appearance prefs above. Gated on the same permission the /theme
   // endpoints enforce server-side.
-  { to: "/settings/branding", label: "Branding", hint: "Tenant colours and logos", icon: Brush, perm: "Permissions.Tenants.UpdateTheme" },
-  { to: "/settings/notifications", label: "Notifications", hint: "How we reach you", icon: Bell },
-  { to: "/settings/api-keys", label: "API keys", hint: "Personal access tokens", icon: KeyRound },
+  { id: "branding", to: "/settings/branding", icon: Brush, perm: "Permissions.Tenants.UpdateTheme" },
+  { id: "notifications", to: "/settings/notifications", icon: Bell },
+  { id: "apiKeys", to: "/settings/api-keys", icon: KeyRound },
 ];
 
 const pad2 = (n: number) => n.toString().padStart(2, "0");
@@ -49,12 +51,18 @@ const pad2 = (n: number) => n.toString().padStart(2, "0");
  * masthead at the top of the content, sections rendered as warm-paper cards.
  */
 export function SettingsLayout() {
+  const { t: translate } = useTranslation("account");
   const location = useLocation();
   const { user } = useAuth();
   const perms = user?.permissions ?? [];
   // Drop tabs the user can't reach, same gate the sidebar uses. `branding`
   // hides for users without Tenants.UpdateTheme.
-  const tabs = TABS.filter((t) => !t.perm || perms.includes(t.perm));
+  // `translate`, not `t`: this component already uses `t` for tab loop variables.
+  const tabs = TABS.filter((t) => !t.perm || perms.includes(t.perm)).map((tab) => ({
+    ...tab,
+    label: translate(`tabs.${tab.id}.label`),
+    hint: translate(`tabs.${tab.id}.hint`),
+  }));
   const activeIndex = Math.max(
     0,
     tabs.findIndex((t) => location.pathname.startsWith(t.to)),
@@ -70,7 +78,7 @@ export function SettingsLayout() {
         icon={SettingsIcon}
         title={
           <span className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-            <span>Settings</span>
+            <span>{translate("settings")}</span>
             <span
               aria-hidden
               className="text-[oklch(from_var(--color-border-strong)_l_c_h_/_0.7)]"
@@ -87,11 +95,11 @@ export function SettingsLayout() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr] lg:gap-10">
         {/* ─── Editorial left nav ─── */}
-        <nav aria-label="Settings sections">
+        <nav aria-label={translate("sectionsNav")}>
           {/* Desktop: vertical numbered list */}
           <div className="sticky top-6 hidden lg:block">
             <p className="mb-4 pl-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[oklch(from_var(--color-muted-foreground)_l_c_h_/_0.6)]">
-              Sections
+              {translate("sections")}
             </p>
             <ul className="relative space-y-px">
               {/* Faint vertical rail tying the numbers together */}

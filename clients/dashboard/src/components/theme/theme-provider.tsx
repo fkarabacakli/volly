@@ -53,13 +53,15 @@ const REDUCED_MOTION_STORAGE_KEY = "fsh.reduce-motion";
 const ACCENT_CLASS_PREFIX = "accent-";
 const FALLBACK_TRANSITION_MS = 280;
 
+// No stored choice → light: the industrial panel is designed light-first
+// (index.html's bootstrap script applies the same default before paint).
 function readStoredMode(): ThemeMode {
-  if (typeof window === "undefined") return "system";
+  if (typeof window === "undefined") return "light";
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+    return stored === "light" || stored === "dark" || stored === "system" ? stored : "light";
   } catch {
-    return "system";
+    return "light";
   }
 }
 
