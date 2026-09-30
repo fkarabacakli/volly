@@ -36,7 +36,7 @@ export const appearance = {
       "plus-jakarta": "Modern, hafif geometrik.",
       outfit: "Kendinden emin geometrik sans.",
       sora: "Özgün, çağdaş.",
-      lexend: "Okuma hızı için ayarlandı.",
+      lexend: "Geniş, sakin geometrik. Varsayılan.",
       figtree: "Samimi, yaklaşılabilir.",
       onest: "Temiz, nötr grotesk.",
       "roboto-flex": "Google'ın amiral gemisi değişken yazı tipi.",

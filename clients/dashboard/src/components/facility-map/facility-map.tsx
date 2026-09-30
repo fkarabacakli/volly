@@ -339,7 +339,7 @@ export function FacilityMap({
               pointerEvents="none"
               className={
                 alertCameraIds.has(d.id)
-                  ? "fill-[oklch(from_var(--color-destructive)_l_c_h_/_0.16)]"
+                  ? "fill-[oklch(from_var(--color-destructive)_l_c_h_/_0.09)]"
                   : "fill-[var(--color-map-cone)]"
               }
             />
@@ -452,8 +452,8 @@ function RackShape({ rack }: { rack: Rack }) {
         rx={0.25}
         className={
           occ >= HIGH_OCCUPANCY
-            ? "fill-[oklch(from_var(--color-warning)_l_c_h_/_0.45)]"
-            : "fill-[oklch(from_var(--color-primary)_l_c_h_/_0.32)]"
+            ? "fill-[oklch(from_var(--color-warning)_l_c_h_/_0.36)]"
+            : "fill-[oklch(from_var(--color-primary)_l_c_h_/_0.22)]"
         }
       />
     </g>
@@ -465,8 +465,8 @@ function MarkerLabel({ k, name, sub }: { k: number; name: string; sub: string })
   const nameSize = 1.2 * k;
   const subSize = 1.0 * k;
   // SVG text can't be measured before paint; a per-glyph estimate is close
-  // enough for a label pill (Figtree averages ~0.56 em).
-  const w = Math.max(name.length * nameSize, sub.length * subSize) * 0.56 + 1.6 * k;
+  // enough for a label pill (Lexend, the default face, averages ~0.62 em).
+  const w = Math.max(name.length * nameSize, sub.length * subSize) * 0.62 + 1.6 * k;
   const h = (sub ? 3.6 : 2.4) * k;
   const x = 2 * k;
   return (

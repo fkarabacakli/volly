@@ -163,16 +163,18 @@
   --map-rack-edge: var(--neutral-300);
   --map-zone:      oklch(from var(--brand-500) l c h / 0.07);
   --map-zone-edge: oklch(from var(--brand-500) l c h / 0.35);
-  --map-alert:     oklch(from var(--danger-600) l c h / 0.14);
+  --map-alert:     oklch(from var(--danger-600) l c h / 0.07);
   --map-alert-edge: var(--danger-600);
-  --map-cone:      oklch(from var(--brand-500) l c h / 0.16);
+  --map-cone:      oklch(from var(--brand-500) l c h / 0.08);
 
   /* ── 4. SYSTEM ─────────────────────────────────────────────────────── */
-  /* Display = Outfit (rounded geometric, headings + hero numerals).
-     Body = Figtree (warm open sans-serif, everything else).
+  /* One family for the whole UI — Lexend by default, or whatever the
+     user picks in Appearance (index.html / the theme provider override
+     --font-sans on :root). Headings and hero numerals follow it so the
+     page never mixes two sans faces; hierarchy comes from size + weight.
      Mono = JetBrains Mono (terminal/console flourishes, tabular data). */
-  --font-display: "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-sans: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Lexend", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-sans);
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   /* Body uses tabular numerals so times, tokens, and costs don't jitter
      between digits. Display reads with default proportional numerals
@@ -205,6 +207,10 @@
                0 4px 6px -4px oklch(0 0 0 / 0.06);
   --shadow-lift: 0 12px 32px -16px oklch(0 0 0 / 0.22),
                  0 4px 8px -4px oklch(0 0 0 / 0.12);
+  /* Float — for sheets that hover over a canvas (map overlay cards): a
+     wide, very low-contrast bloom instead of a tight drop edge. */
+  --shadow-float: 0 1px 2px oklch(0 0 0 / 0.04),
+                  0 12px 32px -12px oklch(0 0 0 / 0.10);
 
   /* Top-edge highlight — kept very subtle. Earlier value (0.55 alpha)
      read as 2014-era glassmorphism gloss; toned to 0.14 so it
@@ -377,7 +383,7 @@
   --map-zone-edge: oklch(from var(--brand-400) l c h / 0.40);
   --map-alert:     oklch(from var(--danger-500) l c h / 0.20);
   --map-alert-edge: var(--danger-500);
-  --map-cone:      oklch(from var(--brand-400) l c h / 0.18);
+  --map-cone:      oklch(from var(--brand-400) l c h / 0.10);
 
   --highlight-top: inset 0 1px 0 oklch(1 0 0 / 0.06);
 
@@ -389,6 +395,8 @@
                0 4px 6px -4px oklch(0 0 0 / 0.22);
   --shadow-lift: 0 16px 36px -18px oklch(0 0 0 / 0.55),
                  0 6px 12px -6px oklch(0 0 0 / 0.35);
+  --shadow-float: 0 1px 2px oklch(0 0 0 / 0.30),
+                  0 14px 36px -14px oklch(0 0 0 / 0.50);
 
   --color-scheme: dark;
 }
@@ -557,40 +565,9 @@
     color: var(--color-foreground);
   }
 
-  /* Atmospheric background — a single soft glow in the chosen brand
-     colour. The earlier two-channel layout paired this with a saffron
-     glow on the upper-right, but the second warm channel was the bulk
-     of the yellow cast people read as a "tint" — dropped. */
-  body {
-    background-image:
-      radial-gradient(ellipse 60% 40% at 15% -5%, oklch(from var(--brand-600) l c h / 0.10), transparent 70%);
-  }
-
-  .dark body {
-    background-image:
-      radial-gradient(ellipse 60% 40% at 15% -5%, oklch(from var(--brand-500) l c h / 0.12), transparent 70%);
-  }
-
-  /* Paper grain overlay — fine ink dots multiplying into the canvas.
-     Visible only on light surfaces, removed in dark so the graphite
-     stays clean. Positioned fixed so it tiles consistently as you
-     scroll, but z-index 0 keeps it behind every app surface. */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.32;
-    mix-blend-mode: multiply;
-    background-image: radial-gradient(
-      circle at 1px 1px,
-      oklch(0 0 0 / 0.05) 1px,
-      transparent 0
-    );
-    background-size: 3px 3px;
-  }
-  .dark body::before { opacity: 0; }
+  /* The canvas is a flat, untextured neutral. The earlier brand glow and
+     paper-grain dot overlay read as decoration; the calm comes from
+     space and type, so nothing sits behind the app surfaces. */
 
   /* Tabular numerals everywhere a number is rendered as data. */
   table, .tabular-nums, [data-tabular="true"], .font-mono, code, kbd, samp, pre {
@@ -1121,14 +1098,7 @@
 .animate-fsh-sheet-in-bottom  { animation: fsh-sheet-in-bottom  var(--duration-slow) var(--ease-out-cubic) both; }
 .animate-fsh-sheet-out-bottom { animation: fsh-sheet-out-bottom var(--duration-fast) var(--ease-out-cubic) both; }
 
-/* The rose + saffron upper-corner glows are static. They used to drift via an
-   infinite background-position animation on body, which can't be composited:
-   it repainted the full viewport every frame and re-ran the blend overlay and
-   the blurred orbs behind it, pinning the GPU while idle (#1368). The 130%
-   size keeps the glows framed exactly as the animation's first frame. */
-body {
-  background-size: 130% 130%, 130% 130%;
-}
+
 
 /* View Transitions API — owns the dark/light crossfade in Chromium and
    Safari. The default UA animations cross-dissolve; we only tune

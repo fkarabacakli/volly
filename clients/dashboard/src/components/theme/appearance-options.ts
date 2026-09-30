@@ -24,9 +24,15 @@ const SHARED_FALLBACKS =
 
 export const fonts: FontOption[] = [
   {
+    id: "lexend",
+    label: "Lexend",
+    description: "Wide, calm geometric. Default.",
+    family: `'Lexend', ${SHARED_FALLBACKS}`,
+  },
+  {
     id: "geist",
     label: "Geist",
-    description: "Designed for screens. Default.",
+    description: "Designed for screens.",
     family: `'Geist', ${SHARED_FALLBACKS}`,
   },
   {
@@ -72,12 +78,6 @@ export const fonts: FontOption[] = [
     family: `'Sora', ${SHARED_FALLBACKS}`,
   },
   {
-    id: "lexend",
-    label: "Lexend",
-    description: "Tuned for reading speed.",
-    family: `'Lexend', ${SHARED_FALLBACKS}`,
-  },
-  {
     id: "figtree",
     label: "Figtree",
     description: "Friendly, approachable.",
@@ -97,7 +97,7 @@ export const fonts: FontOption[] = [
   },
 ];
 
-export const DEFAULT_FONT = "figtree";
+export const DEFAULT_FONT = "lexend";
 
 export type AccentOption = {
   id: string;
@@ -164,8 +164,8 @@ export type CustomAccentSpec = {
 export const DEFAULT_CUSTOM_ACCENT: CustomAccentSpec = { h: 12, c: 1.0 };
 
 // ────────────────────────────────────────────────────────────────────────
-// Lazy fonts — the index.html boot only loads Figtree + Outfit +
-// JetBrains Mono so cold start stays cheap. The other nine selectable
+// Lazy fonts — the index.html boot only loads Lexend (the default) +
+// JetBrains Mono so cold start stays cheap. The other eleven selectable
 // families are fetched on demand the first time the user opens the
 // Appearance settings (where their swatches need to render correctly).
 // Idempotent: a second call is a no-op.
@@ -177,10 +177,11 @@ const LAZY_FONTS_HREF =
     "family=DM+Sans:opsz,wght@9..40,100..1000",
     "family=Geist:wght@100..900",
     "family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700",
+    "family=Figtree:wght@300..900",
     "family=Inter+Tight:wght@100..900",
-    "family=Lexend:wght@100..900",
     "family=Manrope:wght@200..800",
     "family=Onest:wght@100..900",
+    "family=Outfit:wght@100..900",
     "family=Plus+Jakarta+Sans:wght@200..800",
     "family=Roboto+Flex:opsz,wght@8..144,100..1000",
     "family=Sora:wght@100..800",
@@ -218,8 +219,8 @@ export function buildCustomBrandStops(
 const ACCENT_IDS = ["emerald", "rose", "indigo", "violet", "sky", "amber"] as const;
 type AccentId = (typeof ACCENT_IDS)[number];
 const FONT_IDS = [
-  "geist", "inter-tight", "dm-sans", "ibm-plex", "manrope", "plus-jakarta",
-  "outfit", "sora", "lexend", "figtree", "onest", "roboto-flex",
+  "lexend", "geist", "inter-tight", "dm-sans", "ibm-plex", "manrope", "plus-jakarta",
+  "outfit", "sora", "figtree", "onest", "roboto-flex",
 ] as const;
 type FontId = (typeof FONT_IDS)[number];
 

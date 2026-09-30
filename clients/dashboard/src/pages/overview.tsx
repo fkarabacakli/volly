@@ -18,8 +18,8 @@ import { cn } from "@/lib/cn";
 
 /** Tailwind `xl` — below it the cards stack under the map instead of floating on it. */
 const WIDE_QUERY = "(min-width: 1280px)";
-const LEFT_COLUMN_PX = 300;
-const RIGHT_COLUMN_PX = 320;
+const LEFT_COLUMN_PX = 316;
+const RIGHT_COLUMN_PX = 332;
 const OVERLAY_GAP_PX = 16;
 
 /**
@@ -93,12 +93,12 @@ export function OverviewPage() {
       {isWide ? (
         <section
           aria-label={t("facilityMap")}
-          className="relative h-[calc(100dvh-10.5rem)] min-h-[680px] overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-map-floor)]"
+          className="relative h-[calc(100dvh-11rem)] min-h-[680px] overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-[var(--color-map-floor)]"
         >
           {map}
-          <div className="absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-card)] px-3.5 py-1.5 shadow-sm">
+          <div className="absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-card)] px-4 py-2 shadow-[var(--shadow-float)]">
             <MapPinned aria-hidden className="size-4 text-[var(--color-primary)]" />
-            <span className="text-[12.5px] font-semibold">{t("facilityMap")}</span>
+            <span className="text-[13px] font-medium">{t("facilityMap")}</span>
             {openMapLink}
           </div>
           <FloatingColumn side="left" widthPx={LEFT_COLUMN_PX}>
@@ -128,7 +128,7 @@ function FloatingColumn({ side, widthPx, children }: { side: "left" | "right"; w
       className={cn(
         "absolute bottom-4 top-4 flex flex-col gap-3 overflow-y-auto overscroll-contain [scrollbar-width:none]",
         side === "left" ? "left-4" : "right-4",
-        "[&>section]:bg-[oklch(from_var(--color-card)_l_c_h_/_0.9)] [&>section]:shadow-md [&>section]:backdrop-blur-md",
+        "[&>section]:bg-[oklch(from_var(--color-card)_l_c_h_/_0.94)] [&>section]:shadow-[var(--shadow-float)] [&>section]:backdrop-blur-md",
       )}
       style={{ width: widthPx }}
     >

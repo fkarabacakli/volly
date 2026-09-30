@@ -38,7 +38,7 @@ export const appearance: Messages["appearance"] = {
       "plus-jakarta": "Modern, lightly geometric.",
       outfit: "Confident geometric sans.",
       sora: "Distinctive, contemporary.",
-      lexend: "Tuned for reading speed.",
+      lexend: "Wide, calm geometric. Default.",
       figtree: "Friendly, approachable.",
       onest: "Clean, neutral grotesque.",
       "roboto-flex": "Google's flagship variable.",

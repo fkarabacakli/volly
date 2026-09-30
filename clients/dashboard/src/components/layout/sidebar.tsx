@@ -104,7 +104,7 @@ export function Sidebar() {
           <>
             <div className="flex min-w-0 items-center gap-3">
               <BrandLogo className="size-10" />
-              <span className="truncate font-display text-[22px] font-bold tracking-tight text-[var(--color-foreground)]">
+              <span className="truncate font-display text-[21px] font-semibold tracking-[-0.02em] text-[var(--color-foreground)]">
                 {BRAND_NAME}
               </span>
             </div>
@@ -155,13 +155,13 @@ export function Sidebar() {
 /** Shared row styling for nav links, section headers and the sign-out row. */
 function itemClass(isActive: boolean, collapsed: boolean) {
   return cn(
-    "group/nav relative flex h-10 items-center gap-3 rounded-xl text-[13.5px]",
+    "group/nav relative flex h-11 items-center gap-3 rounded-xl text-[14px]",
     "transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out-cubic)]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)]",
     collapsed ? "justify-center px-0" : "px-3",
     isActive
-      ? "bg-[var(--color-primary-soft)] font-semibold text-[var(--color-primary)]"
-      : "font-medium text-[oklch(from_var(--color-foreground)_l_c_h_/_0.72)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)]",
+      ? "bg-[var(--color-muted)] font-medium text-[var(--color-foreground)] [&>svg]:text-[var(--color-primary)]"
+      : "font-normal text-[oklch(from_var(--color-foreground)_l_c_h_/_0.64)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)]",
   );
 }
 
